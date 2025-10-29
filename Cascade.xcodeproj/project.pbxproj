@@ -64,6 +64,7 @@
 		5F57B8CA2E9F327000CA2CE2 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		5F7987172EB1BA620058566C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5F7987192EB1DD5C0058566C /* ReplyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyView.swift; sourceTree = "<group>"; };
+		5F79871B2EB1E6470058566C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		5FE178382EAF3D1D00FC4AA4 /* lookup.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = lookup.dat; sourceTree = "<group>"; };
 		5FE178392EAF3D1D00FC4AA4 /* SFSymbols-build.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFSymbols-build.ttf"; sourceTree = "<group>"; };
 		5FE1783A2EAF3D1D00FC4AA4 /* SFSymbols-black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFSymbols-black.ttf"; sourceTree = "<group>"; };
@@ -125,6 +126,7 @@
 		5F57B8A52E9EEAC600CA2CE2 = {
 			isa = PBXGroup;
 			children = (
+				5F79871B2EB1E6470058566C /* README.md */,
 				5F57B8C22E9EF1C400CA2CE2 /* Packages */,
 				5F57B8B02E9EEAC600CA2CE2 /* Cascade */,
 				5F57B8AF2E9EEAC600CA2CE2 /* Products */,
