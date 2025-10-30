@@ -5,7 +5,7 @@ import UIKitExtensions
 public class CustomNavigationController: UINavigationController {
 
     private let customNavBar: LiquidGlassView = {
-        let glassView = LiquidGlassView(blurRadius: 8, cornerRadius: 12, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
+        let glassView = LiquidGlassView(blurRadius: 6, cornerRadius: 12, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
         glassView.frameInterval = PerformanceManager.frameInterval
         glassView.scaleFactor = PerformanceManager.scaleFactor
         glassView.solidViewColour = UIColor(red: 0.2, green: 0.2, blue: 0.22, alpha: 0.8)

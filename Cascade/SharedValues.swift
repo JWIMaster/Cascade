@@ -33,18 +33,6 @@ public var token: String? {
 
 public let clientUser = SLClient(token: token ?? "idk")
 
-public var currentlyOpenChannel: Snowflake = Snowflake(0)
-
-public var hasAuthenticated: String? {
-    get {
-        return StringCache.load(for: "hasAuthenticated")
-    }
-    set {
-        if let value = newValue {
-            StringCache.store(value, for: "hasAuthenticated")
-        }
-    }
-}
 
 
 public class StringCache {
@@ -120,6 +108,13 @@ public enum PerformanceClass {
     case potato
 }
 
+public let isSimulator: Bool = {
+    #if targetEnvironment(simulator)
+    return true
+    #else
+    return false
+    #endif
+}()
 
 final class PerformanceManager {
     static var performanceClass: PerformanceClass {
@@ -160,17 +155,22 @@ final class PerformanceManager {
     }
     static var disableBlur: Bool {
         get {
-            switch performanceClass {
-            case .ultraHigh:
-                return true
-            case .high:
-                return true
-            case .medium:
-                return true
-            case .low:
-                return true
-            case .potato:
-                return true
+            if #available(iOS 9.0, *) {
+                if isSimulator { return false } else { return false }
+            } else {
+                //MARK: One day I will fix iOS 9- blur...
+                switch performanceClass {
+                case .ultraHigh:
+                    return false
+                case .high:
+                    return false
+                case .medium:
+                    return true
+                case .low:
+                    return true
+                case .potato:
+                    return true
+                }
             }
         }
     }

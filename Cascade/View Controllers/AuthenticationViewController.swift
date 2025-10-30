@@ -34,7 +34,6 @@ class AuthenticationViewController: UIViewController, UITextViewDelegate {
         startButton.addAction(for: .touchUpInside) {
             let trimmed = self.tokenInput.text.trimmingCharacters(in: .whitespacesAndNewlines)
             token = trimmed
-            hasAuthenticated = "true"
             let startVC = ViewController()
             let navController = CustomNavigationController(rootViewController: startVC)
             UIApplication.shared.keyWindow?.rootViewController = navController

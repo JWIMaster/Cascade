@@ -23,7 +23,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var rootVC: UIViewController
         var navController: UINavigationController
         AvatarCache.shared.memoryCache.countLimit = 20
+
         
+        /*rootVC = SnapshotViewController()
+        window?.rootViewController = rootVC
+        window?.makeKeyAndVisible()
+        return true*/
         
         
         if token != nil {
@@ -47,4 +52,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
 }
+
 

@@ -50,6 +50,24 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     static let avatarQueue: DispatchQueue = DispatchQueue(label: "com.jwi.avatarQueue", attributes: .concurrent, target: .global(qos: .userInitiated))
     
+    private static let timestampFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_AU_POSIX")
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter
+    }()
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_AU_POSIX")
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    private static let calendar = Calendar.current
+    
     public init(_ slClient: SLClient, message: Message) {
         super.init(frame: .zero)
         self.slClient = slClient
@@ -103,7 +121,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
         messageText.lineBreakMode = .byWordWrapping
         messageText.preferredMaxLayoutWidth = UIScreen.main.bounds.width - 80
         messageText.numberOfLines = 0
-        messageText.sizeToFit()
+        //messageText.sizeToFit()
         
         MessageView.markdownQueue.async { [weak self] in
             guard let self = self else { return }
@@ -113,8 +131,8 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
                 
                 self.messageText.attributedText = parsed
                 self.messageText.sizeToFit()
-                self.setNeedsLayout()
-                self.layoutIfNeeded()
+                //self.setNeedsLayout()
+                //self.layoutIfNeeded()
                 
                 // Give Auto Layout a short delay to settle before scrolling
                 guard let parentVC = self.parentViewController else { return }
@@ -217,27 +235,22 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     private func setupTimestamp() {
         guard let messageTimestamp = message?.timestamp else { return }
-        let formatter = DateFormatter()
-        let calendar = Calendar.current
-        formatter.locale = Locale(identifier: "en_AU_POSIX")
-        formatter.dateStyle = {
-            if calendar.isDateInToday(messageTimestamp) || calendar.isDateInYesterday(messageTimestamp) {
-                return .none
-            } else {
-                return .short
-            }
-        }()
-        
-        formatter.timeStyle = .short
-        
-        timestamp.text = {
-            if calendar.isDateInYesterday(messageTimestamp) {
-                return String("Yesterday at ").appending(formatter.string(from: messageTimestamp))
-            } else {
-                return formatter.string(from: messageTimestamp)
-            }
-        }()
-        
+        let calendar = Self.calendar
+
+        // Cache these once per function call
+        let isToday = calendar.isDateInToday(messageTimestamp)
+        let isYesterday = calendar.isDateInYesterday(messageTimestamp)
+
+        let formatter: DateFormatter
+        if isToday || isYesterday {
+            formatter = Self.timestampFormatter
+        } else {
+            formatter = Self.dateFormatter
+        }
+
+        let formattedTime = formatter.string(from: messageTimestamp)
+        timestamp.text = isYesterday ? "Yesterday at \(formattedTime)" : formattedTime
+
         timestamp.font = .systemFont(ofSize: 12)
         timestamp.textColor = .white
         timestamp.backgroundColor = .clear
@@ -267,13 +280,14 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor, multiplier: 1/aspectRatio)
         ])
         
-        attachment.fetch { [weak self] attachment in
-            guard let self = self, let image = attachment as? UIImage else { return }
+        attachment.fetch { [weak imageView] attachment in
+            guard let imageView = imageView, let image = attachment as? UIImage else { return }
             DispatchQueue.global(qos: .userInitiated).async {
                 autoreleasepool {
-                    let resizedImage = image.resizeImage(image, targetSize: scaledSize)
+                    let resizedImage = image.getThumbnail(ofQuality: .low)
                     DispatchQueue.main.async {
                         imageView.image = resizedImage
+                        imageView.backgroundColor = .clear
                     }
                 }
             }
@@ -345,7 +359,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
                     guard let imageView = imageView, let image = attachment as? UIImage else { return }
                     DispatchQueue.global(qos: .userInitiated).async {
                         autoreleasepool {
-                            let resizedImage = image.resizeImage(image, targetSize: scaledSize)
+                            let resizedImage = image.getThumbnail(ofQuality: .low)
                             DispatchQueue.main.async {
                                 imageView.image = resizedImage
                                 imageView.backgroundColor = .clear

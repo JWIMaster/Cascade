@@ -8,7 +8,7 @@ import SFSymbolsCompatKit
 public class InputView: UIView, UITextViewDelegate {
     public weak var snapshotView: UIView?
     public let backgroundView: LiquidGlassView = {
-        let bView = LiquidGlassView(blurRadius: 8, cornerRadius: 20, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
+        let bView = LiquidGlassView(blurRadius: 6, cornerRadius: 20, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
         bView.translatesAutoresizingMaskIntoConstraints = false
         bView.solidViewColour = .discordGray.withAlphaComponent(0.8)
         bView.scaleFactor = PerformanceManager.scaleFactor
@@ -18,7 +18,7 @@ public class InputView: UIView, UITextViewDelegate {
     public var channel: TextChannel?
     public var tokenInputView: Bool?
     
-    let buttonBackground = LiquidGlassView(blurRadius: 0, cornerRadius: 20, snapshotTargetView: nil, disableBlur: true)
+    let buttonBackground = LiquidGlassView(blurRadius: 6, cornerRadius: 20, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
     
     var replyMessage: Message?
     var editMessage: Message?

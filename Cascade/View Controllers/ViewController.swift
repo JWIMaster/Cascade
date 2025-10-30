@@ -10,6 +10,7 @@ import SwiftcordLegacy
 import UIKitExtensions
 import UIKitCompatKit
 import iOS6BarFix
+import LiveFrost
 
 public typealias UIStackView = UIKitCompatKit.UIStackView
 
