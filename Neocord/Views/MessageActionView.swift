@@ -110,50 +110,37 @@ class MessageActionView: UIView {
         replyButton.addAction(for: .touchUpInside) { [weak self] in
             guard let self = self, let message = self.message else { return }
             
-            if let dmVC = self.parentViewController as? DMViewController {
+            if let dmVC = self.parentViewController as? TextViewController {
                 dmVC.textInputView?.replyToMessage(message)
                 dmVC.endMessageAction()
-            } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-                guildTextVC.textInputView?.replyToMessage(message)
-                guildTextVC.endMessageAction()
             }
         }
 
         editButton.addAction(for: .touchUpInside) { [weak self] in
             guard let self = self, let message = self.message else { return }
             
-            if let dmVC = self.parentViewController as? DMViewController {
+            if let dmVC = self.parentViewController as? TextViewController {
                 dmVC.textInputView?.editMessage(message)
                 dmVC.endMessageAction()
-            } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-                guildTextVC.textInputView?.editMessage(message)
-                guildTextVC.endMessageAction()
             }
         }
 
         deleteButton.addAction(for: .touchUpInside) { [weak self] in
             guard let self = self, let message = self.message, let channel = self.channel, let slClient = self.slClient else { return }
             
-            if let dmVC = self.parentViewController as? DMViewController {
+            if let dmVC = self.parentViewController as? TextViewController {
                 slClient.delete(message: message, in: channel) { error in
                     // handle error if needed
                 }
                 dmVC.endMessageAction()
-            } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-                slClient.delete(message: message, in: channel) { error in
-                    // handle error if needed
-                }
-                guildTextVC.endMessageAction()
             }
         }
 
         cancelButton.addAction(for: .touchUpInside) { [weak self] in
             guard let self = self else { return }
             
-            if let dmVC = self.parentViewController as? DMViewController {
+            if let dmVC = self.parentViewController as? TextViewController {
                 dmVC.endMessageAction()
-            } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-                guildTextVC.endMessageAction()
             }
         }
     }

@@ -294,10 +294,8 @@ public class InputView: UIView, UITextViewDelegate {
     
     public func textViewDidChange(_ textView: UITextView) {
         var maxHeight: CGFloat = 0
-        if let dmVC = parentViewController as? DMViewController, let navBarHeight = dmVC.navigationController?.navigationBar.frame.height {
+        if let dmVC = parentViewController as? TextViewController, let navBarHeight = dmVC.navigationController?.navigationBar.frame.height {
             maxHeight = dmVC.view.bounds.height - 50 - navBarHeight
-        } else if let guildTextVC = parentViewController as? GuildTextViewController, let navBarHeight = guildTextVC.navigationController?.navigationBar.frame.height {
-            maxHeight = guildTextVC.view.bounds.height - 50 - navBarHeight
         }
         if let backgroundView = backgroundView as? LiquidGlassView {
             backgroundView.frameInterval = 60*60*60
@@ -322,11 +320,9 @@ public class InputView: UIView, UITextViewDelegate {
     
     public override var intrinsicContentSize: CGSize {
         var maxHeight: CGFloat = 0
-        if let dmVC = parentViewController as? DMViewController, let navBarHeight = dmVC.navigationController?.navigationBar.frame.height {
+        if let dmVC = parentViewController as? TextViewController, let navBarHeight = dmVC.navigationController?.navigationBar.frame.height {
             maxHeight = dmVC.view.bounds.height - 50 - navBarHeight
-        } else if let guildTextVC = parentViewController as? GuildTextViewController, let navBarHeight = guildTextVC.navigationController?.navigationBar.frame.height {
-            maxHeight = guildTextVC.view.bounds.height - 50 - navBarHeight
-        }
+        } 
         let width = textView.bounds.width > 0 ? textView.bounds.width : 100
         let size = textView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
         let height = max(40, min(size.height, maxHeight))

@@ -15,7 +15,7 @@ import iOS6BarFix
 import LiveFrost
 
 //MARK: View Background Functions
-extension DMViewController {
+extension TextViewController {
     func animatedBackground() {
         backgroundGradient.frame = view.frame
         backgroundGradient.colors = [self.view.backgroundColor?.cgColor, self.view.backgroundColor?.cgColor]

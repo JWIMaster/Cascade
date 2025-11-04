@@ -16,7 +16,7 @@ import LiveFrost
 
 
 //MARK: Keyboard and gesture functions
-extension DMViewController {
+extension TextViewController {
     func setupKeyboardObservers() {
         let center = NotificationCenter.default
         

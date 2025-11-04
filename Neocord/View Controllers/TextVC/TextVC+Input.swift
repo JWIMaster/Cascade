@@ -15,9 +15,9 @@ import iOS6BarFix
 import LiveFrost
 
 //MARK: View input functions
-extension DMViewController {
-    func setupInputView(for dm: DMChannel) {
-        textInputView = InputView(channel: dm, snapshotView: view)
+extension TextViewController {
+    func setupInputView(for textChannel: TextChannel) {
+        textInputView = InputView(channel: textChannel, snapshotView: view)
         guard let textInputView = textInputView else {
             return
         }

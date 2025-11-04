@@ -124,7 +124,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
         guard let messageAuthorID = self.message?.author?.id else { return }
         
         if let guildID = self.guildTextChannel?.guild?.id,
-           let cachedMember = slClient?.guilds[guildID]?.members?[messageAuthorID] {
+           let cachedMember = slClient?.guilds[guildID]?.members[messageAuthorID] {
             self.member = cachedMember
             applyMember()
         }

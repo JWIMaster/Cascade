@@ -96,6 +96,9 @@ public class CustomNavigationController: UINavigationController {
         titleLabel.textColor = .white
         titleLabel.backgroundColor = .clear
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.lineBreakMode = .byClipping
+        titleLabel.preferredMaxLayoutWidth = 10
+        titleLabel.numberOfLines = 1
         customNavBar.addSubview(titleLabel)
 
         // Back button
@@ -105,10 +108,11 @@ public class CustomNavigationController: UINavigationController {
         backButton.translatesAutoresizingMaskIntoConstraints = false
         customNavBar.addSubview(backButton)
         backButton.addTarget(self, action: #selector(goBack), for: .touchUpInside)
+        titleLabel.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor).isActive = true
+        titleLabel.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor).isActive = true
 
         NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -10),
+            
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 16),
             backButton.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor)
         ])
@@ -129,6 +133,7 @@ public class CustomNavigationController: UINavigationController {
     }
     
     public override func viewDidAppear(_ animated: Bool) {
+        
         if let customNavBar = customNavBar as? LiquidGlassView {
             
         } else {

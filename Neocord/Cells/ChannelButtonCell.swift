@@ -33,7 +33,7 @@ class ChannelButtonCell: UICollectionViewCell {
             bg.layer.cornerRadius = 22
             return bg
         default:
-            let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
+            let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 14, snapshotTargetView: nil, disableBlur: true)
             lg.shadowOpacity = 0.6
             lg.shadowRadius = 0
             lg.solidViewColour = .clear
@@ -106,5 +106,39 @@ class ChannelButtonCell: UICollectionViewCell {
                 }
             }
         }
+    }
+}
+
+
+class ChannelCategoryCell: UICollectionViewCell {
+    static let reuseID = "ChannelCategoryCell"
+
+    private let titleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.font = UIFont.systemFont(ofSize: 15)
+        lbl.textColor = .lightGray
+        lbl.backgroundColor = .clear
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        print("yay")
+        contentView.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        backgroundColor = .clear
+        isUserInteractionEnabled = false
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func configure(with category: GuildCategory) {
+        titleLabel.text = category.name ?? "Unknown Category"
     }
 }

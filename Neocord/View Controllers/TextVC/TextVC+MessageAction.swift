@@ -16,12 +16,17 @@ import LiveFrost
 
 
 //MARK: Message Action Functions
-extension DMViewController {
+extension TextViewController {
     func takeMessageAction(_ message: Message) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         applyGaussianBlur(to: containerView.layer, radius: 12)
-        let messageActionView = MessageActionView(clientUser, message, self.dm!)
+        var messageActionView: MessageActionView
+        if let channel = channel {
+            messageActionView = MessageActionView(clientUser, message, channel)
+        } else {
+            messageActionView = MessageActionView(clientUser, message, self.dm!)
+        }
         messageActionView.alpha = 0
         messageActionView.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
         view.addSubview(messageActionView)

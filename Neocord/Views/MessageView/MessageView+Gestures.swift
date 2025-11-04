@@ -31,10 +31,8 @@ extension MessageView {
     
     @objc func profileClick(_ gesture: UITapGestureRecognizer) {
         guard let message = self.message, let user = message.author else { return }
-        if let dmVC = self.parentViewController as? DMViewController {
-            dmVC.presentProfileView(for: user)
-        } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-            guildTextVC.presentProfileView(for: user)
+        if let textVC = self.parentViewController as? TextViewController {
+            textVC.presentProfileView(for: user)
         }
     }
     
@@ -55,10 +53,8 @@ extension MessageView {
             let feedback = UIImpactFeedbackGenerator(style: .medium)
             feedback.impactOccurred()
         }
-        if let dmVC = parentViewController as? DMViewController {
+        if let dmVC = parentViewController as? TextViewController {
             dmVC.takeMessageAction(self.message!)
-        } else if let guildTextVC = parentViewController as? GuildTextViewController {
-            guildTextVC.takeMessageAction(self.message!)
         }
     }
 }

@@ -38,15 +38,11 @@ extension MessageView {
                 
                 // Give Auto Layout a short delay to settle before scrolling
                 guard let parentVC = self.parentViewController else { return }
-                if let dmVC = parentVC as? DMViewController {
+                if let dmVC = parentVC as? TextViewController {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                         dmVC.scrollToBottom(animated: true)
                     }
-                } else if let guildTextVC = parentVC as? GuildTextViewController {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        guildTextVC.scrollToBottom(animated: true)
-                    }
-                }
+                } 
                 
             }
         }

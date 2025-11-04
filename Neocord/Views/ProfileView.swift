@@ -310,10 +310,8 @@ class ProfileView: UIView {
     
     
     func dismissProfile() {
-        if let dmVC = parentViewController as? DMViewController {
+        if let dmVC = parentViewController as? TextViewController {
             dmVC.removeProfileView()
-        } else if let guildTextVC = parentViewController as? GuildTextViewController {
-            guildTextVC.removeProfileView()
         }
     }
     

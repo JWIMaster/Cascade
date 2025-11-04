@@ -15,8 +15,9 @@ import iOS6BarFix
 import LiveFrost
 
 
-class DMViewController: UIViewController, UIGestureRecognizerDelegate {
+class TextViewController: UIViewController, UIGestureRecognizerDelegate {
     public var dm: DMChannel?
+    public var channel: GuildText?
     var textInputView: InputView?
     var messageIDsInStack = Set<Snowflake>()
     var userIDsInStack = Set<Snowflake>()
@@ -32,6 +33,8 @@ class DMViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var observers = [NSObjectProtocol]()
     
+    var requestedUserIDs = Set<Snowflake>()
+    
     var isKeyboardVisible = false
     
     let logger = LegacyLogger(fileName: "legacy_debug.txt")
@@ -46,11 +49,18 @@ class DMViewController: UIViewController, UIGestureRecognizerDelegate {
         return stack
     }()
     
+    func requestMemberIfNeeded(_ userID: Snowflake) {
+        guard !requestedUserIDs.contains(userID), let guildID = channel?.guild?.id else { return }
+        requestedUserIDs.insert(userID)
+        clientUser.gateway?.requestGuildMemberChunk(guildId: guildID, userIds: [userID])
+    }
+    
     var profileBlur = LiquidGlassView(blurRadius: 12, cornerRadius: 0, snapshotTargetView: nil, disableBlur: false, filterOptions: [])
     
-    public init(dm: DMChannel) {
+    public init(dm: DMChannel? = nil, channel: GuildText? = nil) {
         super.init(nibName: nil, bundle: nil)
         self.dm = dm
+        self.channel = channel
     }
     
     required init?(coder: NSCoder) {
@@ -62,10 +72,16 @@ class DMViewController: UIViewController, UIGestureRecognizerDelegate {
         view.backgroundColor = .discordGray
         
         title = {
-            if let dm = dm as? DM {
-                return dm.recipient?.nickname ?? dm.recipient?.displayname ?? dm.recipient?.username
-            } else if let dm = dm as? GroupDM {
-                return dm.name
+            if let channel = channel {
+                return channel.name
+            } else if let dm = dm {
+                if let dm = dm as? DM {
+                    return dm.recipient?.nickname ?? dm.recipient?.displayname ?? dm.recipient?.username
+                } else if let dm = dm as? GroupDM {
+                    return dm.name
+                } else {
+                    return "Unknown"
+                }
             } else {
                 return "Unknown"
             }
@@ -83,7 +99,7 @@ class DMViewController: UIViewController, UIGestureRecognizerDelegate {
         setupConstraints()
         getMessages()
         attachGatewayObservers()
-        animatedBackground()
+        //animatedBackground()
         
         guard let gateway = clientUser.gateway else { return }
         

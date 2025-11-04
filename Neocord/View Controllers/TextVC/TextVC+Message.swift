@@ -15,19 +15,25 @@ import iOS6BarFix
 import LiveFrost
 
 //MARK: REST API Message functions
-extension DMViewController {
+extension TextViewController {
     //REST API past 50 message get function
     func getMessages() {
-        guard let dm = dm, let id = dm.id else { return }
+        var textChannel: TextChannel
+        if let channel = channel {
+            textChannel = channel
+        } else if let dm = dm {
+            textChannel = dm
+        } else {
+            fatalError("no channel")
+        }
         
-        
-        clientUser.getChannelMessages(for: id) { [weak self] messages, error in
+        clientUser.getChannelMessages(for: textChannel.id!) { [weak self] messages, error in
             guard let self = self else { return }
             
             self.addMessagesToStack(messages)
             
             if !self.initialViewSetupComplete {
-                self.setupInputView(for: dm)
+                self.setupInputView(for: textChannel)
             }
             
             //Fade on container
@@ -43,7 +49,15 @@ extension DMViewController {
     func addMessagesToStack(_ messages: [Message]) {
         for message in messages {
             if let messageID = message.id, let userID = message.author?.id, !messageIDsInStack.contains(messageID) {
-                let messageView = MessageView(clientUser, message: message)
+                var messageView: MessageView
+                if let channel = channel {
+                    messageView = MessageView(clientUser, message: message, guildTextChannel: channel)
+                    if !requestedUserIDs.contains(userID) {
+                        requestedUserIDs.insert(userID)
+                    }
+                } else {
+                    messageView = MessageView(clientUser, message: message)
+                }
                 self.messageStack.addArrangedSubview(messageView)
                 messageIDsInStack.insert(messageID)
                 scrollView.layoutIfNeeded()
@@ -51,6 +65,8 @@ extension DMViewController {
                 if !userIDsInStack.contains(userID) { userIDsInStack.insert(userID) }
             }
         }
+        guard let guildID = self.channel?.guild?.id else { return }
+        clientUser.gateway?.requestGuildMemberChunk(guildId: guildID, userIds: self.requestedUserIDs)
     }
     
     func scrollToMessage(withID messageID: Snowflake) {

@@ -84,10 +84,8 @@ public class ReplyMessageView: UIView, UIGestureRecognizerDelegate {
     @objc private func replyTapped() {
         guard let replyMessageID = reply?.id else { return }
         
-        if let dmVC = self.parentViewController as? DMViewController {
+        if let dmVC = self.parentViewController as? TextViewController {
             dmVC.scrollToMessage(withID: replyMessageID)
-        } else if let guildTextVC = self.parentViewController as? GuildTextViewController {
-            guildTextVC.scrollToMessage(withID: replyMessageID)
         }
         
         

@@ -80,22 +80,11 @@ class ViewController: UIViewController {
         cv.delegate = self
         cv.dataSource = self
         cv.register(ChannelButtonCell.self, forCellWithReuseIdentifier: ChannelButtonCell.reuseID)
+        cv.register(ChannelCategoryCell.self, forCellWithReuseIdentifier: "ChannelCategoryCell")
+
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
-    
-    // In your ViewController
-    lazy var channelsTableView: UITableView = {
-        let tv = UITableView(frame: .zero, style: .plain) // or .grouped
-        tv.backgroundColor = .clear
-        tv.delegate = self
-        tv.dataSource = self
-        tv.register(ChannelButtonCell.self, forCellReuseIdentifier: ChannelButtonCell.reuseID)
-        tv.translatesAutoresizingMaskIntoConstraints = false
-        tv.separatorStyle = .none
-        return tv
-    }()
-
     
     var sidebarBackgroundView: UIView? = {
         switch device {
@@ -164,35 +153,6 @@ class ViewController: UIViewController {
     }
     
     
-    func fetchDMs() {
-        clientUser.getSortedDMs { [weak self] dms, error in
-            guard let self = self else { return }
-            self.dms = dms
-            self.dmCollectionView.reloadData()
-        }
-    }
-    
-    func fetchGuilds() {
-        clientUser.getUserGuilds() { [weak self] guilds, error in
-            guard let self = self else { return }
-            for (_, guild) in guilds {
-                self.guilds.append(guild)
-            }
-            self.sidebarCollectionView.reloadData()
-        }
-    }
-    
-    func fetchChannels(for guild: Guild, completion: @escaping () -> Void) {
-        clientUser.getGuildChannels(for: guild.id!) { [weak self] channels, error in
-            guard let self = self else { return }
-            self.activeGuildChannels = channels
-            self.groupChannelsByCategory()
-            self.channelsCollectionView.reloadData()
-            completion()
-        }
-    }
-    
-    
     func showContentView(_ view: UIView) {
         activeContentView.subviews.forEach { $0.removeFromSuperview() }
         
@@ -200,49 +160,55 @@ class ViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         activeContentView.pinToEdges(of: view)
     }
+    
+    
     var activeGuild: Guild?
     
-    var activeGuildChannelsByCategory: [GuildCategory: [GuildText]] = [:]
-    var sortedCategoryKeys: [GuildCategory] = []
+    // This will include both categories and channels
+    var displayedChannels: [GuildChannel] = []
 
-    
-    func groupChannelsByCategory() {
+    func flattenChannelsForDisplay() {
         guard let guild = activeGuild else { return }
+        displayedChannels.removeAll()
 
-        // Reset dictionary
-        var dict: [GuildCategory: [GuildText]] = [:]
+        let textChannels = guild.channels.values.compactMap { $0 as GuildChannel }
+            .filter { !($0 is GuildCategory) }
 
-        for channel in activeGuildChannels {
-            guard let textChannel = channel as? GuildText else { continue }
+        // Get categories
+        let categories = guild.channels.values.compactMap { $0 as? GuildCategory }
 
-            // If it has a parent category, use that; otherwise, use a placeholder category
-            let category: GuildCategory
-            if let parentCategory = textChannel.category {
-                category = parentCategory
-            } else {
-                // Create a dummy "Uncategorized" category
-                let uncategorized = GuildCategory(clientUser, [:])
-                uncategorized.name = "Uncategorized"
-                category = uncategorized
-            }
-
-            if dict[category] == nil {
-                dict[category] = []
-            }
-            dict[category]?.append(textChannel)
+        // Sort categories based on the highest-positioned child channel
+        let sortedCategories = categories.sorted { category1, category2 in
+            let maxPos1 = textChannels.filter { $0.parentID == category1.id }.map { $0.position ?? 0 }.max() ?? 0
+            let maxPos2 = textChannels.filter { $0.parentID == category2.id }.map { $0.position ?? 0 }.max() ?? 0
+            return maxPos2 > maxPos1// higher channels first
         }
 
-        // Sort channels within each category by position
-        for (category, channels) in dict {
-            dict[category] = channels.sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+        for category in sortedCategories {
+            displayedChannels.append(category)
+
+            let channelsInCategory = textChannels.filter { $0.parentID == category.id }.sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+
+            displayedChannels.append(contentsOf: channelsInCategory)
         }
 
-        self.activeGuildChannelsByCategory = dict
-        self.sortedCategoryKeys = dict.keys.sorted { ($0.position ?? 0) < ($1.position ?? 0) }
-        //channelsTableView.reloadData()
+        // Add uncategorized channels at the end
+        let uncategorized = textChannels
+            .filter { $0.parentID == nil || categories.first(where: { $0.id == $0.parentID }) == nil }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+
+        displayedChannels.append(contentsOf: uncategorized)
+
+        channelsCollectionView.reloadData()
     }
 
+
+
+
+
 }
+
+
 
 
 

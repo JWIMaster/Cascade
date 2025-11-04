@@ -16,11 +16,10 @@ import LiveFrost
 
 
 //MARK: Gateway functions
-extension DMViewController {
+extension TextViewController {
     ///Attach websocket watchers to do realtime message events
     func attachGatewayObservers() {
         guard let gateway = clientUser.gateway else { return }
-
         // Assign closures
         gateway.onMessageCreate = { [weak self] message in
             self?.createMessage(message)
@@ -36,20 +35,42 @@ extension DMViewController {
     
     //Websocket create message function
     func createMessage(_ message: Message) {
-        //Unwrap optionals and check if the stack already contains the message we are about to add
-        if let messageID = message.id, let userID = message.author?.id, !messageIDsInStack.contains(messageID), self.dm?.id == message.channelID {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else {return }
-                self.messageStack.addArrangedSubview(MessageView(clientUser, message: message))
-                self.messageIDsInStack.insert(messageID)
-                //If it's a new user, add it to the list of users
-                if !self.userIDsInStack.contains(userID) { self.userIDsInStack.insert(userID) }
-                
-                self.scrollView.layoutIfNeeded()
-                //self.scrollToBottom(animated: true)
+        guard let messageID = message.id,
+              let userID = message.author?.id,
+              !messageIDsInStack.contains(messageID) else { return }
+        
+        // Determine if this message belongs to the current view
+        let isDMMessage = (self.dm?.id == message.channelID)
+        let isGuildMessage = (self.channel?.id == message.channelID)
+        
+        guard isDMMessage || isGuildMessage else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if isGuildMessage, let channel = self.channel {
+                // Guild channel: include guild context
+                let messageView = MessageView(clientUser, message: message, guildTextChannel: channel)
+                self.messageStack.addArrangedSubview(messageView)
+                self.requestMemberIfNeeded(userID)
+            } else {
+                // DM channel
+                let messageView = MessageView(clientUser, message: message)
+                self.messageStack.addArrangedSubview(messageView)
             }
+            
+            // Track message and user IDs
+            self.messageIDsInStack.insert(messageID)
+            if !self.userIDsInStack.contains(userID) {
+                self.userIDsInStack.insert(userID)
+            }
+            
+            self.scrollView.layoutIfNeeded()
+            // Optionally scroll to bottom
+            // self.scrollToBottom(animated: true)
         }
     }
+
     
     func deleteMessage(_ message: Message) {
         for view in messageStack.arrangedSubviews {
