@@ -27,12 +27,17 @@ extension MessageView {
         tapGesture.delegate = self
         self.authorAvatar.isUserInteractionEnabled = true
         self.authorAvatar.addGestureRecognizer(tapGesture)
+        
     }
     
     @objc func profileClick(_ gesture: UITapGestureRecognizer) {
         guard let message = self.message, let user = message.author else { return }
         if let textVC = self.parentViewController as? TextViewController {
-            textVC.presentProfileView(for: user)
+            if let member = self.member {
+                textVC.presentProfileView(for: user, member)
+            } else {
+                textVC.presentProfileView(for: user)
+            }
         }
     }
     

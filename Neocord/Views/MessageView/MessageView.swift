@@ -48,7 +48,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     var isClientUser: Bool?
     var markdownParser: TSMarkdownParser = TSMarkdownParser.standard()
     var member: GuildMember?
-    var guildTextChannel: GuildText?
+    var guildTextChannel: GuildChannel?
     
     
     static let markdownQueue: DispatchQueue = DispatchQueue(label: "com.jwi.markdownrender", attributes: .concurrent, target: .global(qos: .userInitiated))
@@ -73,7 +73,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     static let calendar = Calendar.current
     
-    public init(_ slClient: SLClient, message: Message, guildTextChannel: GuildText? = nil) {
+    public init(_ slClient: SLClient, message: Message, guildTextChannel: GuildChannel? = nil) {
         super.init(frame: .zero)
         self.slClient = slClient
         self.message = message
@@ -88,7 +88,9 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     
     func setup() {
-        setupMembers()
+        if let guildTextChannel = guildTextChannel {
+            setupMembers()
+        }
         setupText()
         setupBackground()
         setupAuthorName()
@@ -100,6 +102,9 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
         setupSubviews()
         setupContraints()
         setupAttachments()
+        self.clipsToBounds = false
+        self.authorAvatar.clipsToBounds = false
+
     }
     
     func setupSubviews() {
@@ -129,7 +134,7 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
             applyMember()
         }
         
-        slClient?.gateway?.addGuildMemberListUpdateObserver { [weak self] members in
+        slClient?.gateway?.addGuildMemberChunkObserver { [weak self] members in
             guard let self = self else { return }
             if let member = members[messageAuthorID] {
                 self.member = member
@@ -239,13 +244,19 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     public override func layoutSubviews() {
         super.layoutSubviews()
     }
+    
+    
+    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        // Check all subviews, even outside bounds
+        for subview in subviews {
+            let convertedPoint = subview.convert(point, from: self)
+            if let hitView = subview.hitTest(convertedPoint, with: event) {
+                return hitView
+            }
+        }
+        // Fallback
+        return super.hitTest(point, with: event)
+    }
+
 }
-
-
-
-
-
-
-
-
 

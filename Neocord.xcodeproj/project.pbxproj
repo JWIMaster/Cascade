@@ -14,12 +14,6 @@
 		5F2914022EAB09440019DC0F /* ChannelButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2914012EAB09440019DC0F /* ChannelButtonView.swift */; };
 		5F2914062EAC462F0019DC0F /* png8.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2914052EAC462F0019DC0F /* png8.swift */; };
 		5F2914082EAC4EB00019DC0F /* defaultavatar.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F2914072EAC4EB00019DC0F /* defaultavatar.png */; };
-		5F4649B62EBA0F6900EB3585 /* GuildTextVC+Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B02EBA0F6900EB3585 /* GuildTextVC+Input.swift */; };
-		5F4649B72EBA0F6900EB3585 /* GuildTextVC+Gateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B12EBA0F6900EB3585 /* GuildTextVC+Gateway.swift */; };
-		5F4649B82EBA0F6900EB3585 /* GuildTextVC+Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B22EBA0F6900EB3585 /* GuildTextVC+Keyboard.swift */; };
-		5F4649B92EBA0F6900EB3585 /* GuildTextVC+Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B32EBA0F6900EB3585 /* GuildTextVC+Message.swift */; };
-		5F4649BA2EBA0F6900EB3585 /* GuildTextVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B42EBA0F6900EB3585 /* GuildTextVC.swift */; };
-		5F4649BB2EBA0F6900EB3585 /* GuildTextVC+MessageAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4649B52EBA0F6900EB3585 /* GuildTextVC+MessageAction.swift */; };
 		5F50947D2EA4F268002646A2 /* TextVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F50947C2EA4F268002646A2 /* TextVC.swift */; };
 		5F5094822EA57D92002646A2 /* SharedValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5094812EA57D92002646A2 /* SharedValues.swift */; };
 		5F5094862EA64674002646A2 /* CustomNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5094852EA64674002646A2 /* CustomNavigationController.swift */; };
@@ -47,6 +41,8 @@
 		5F9F58E12EB6E8CC00A09760 /* MessageView+Gestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9F58E02EB6E8CC00A09760 /* MessageView+Gestures.swift */; };
 		5F9F58E62EB6EBCF00A09760 /* MainVC+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9F58E52EB6EBCF00A09760 /* MainVC+Delegate.swift */; };
 		5F9F58E82EB6FD3000A09760 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9F58E72EB6FD3000A09760 /* ProfileView.swift */; };
+		5FACCA242EBAC163007EC568 /* ForumVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FACCA232EBAC163007EC568 /* ForumVC.swift */; };
+		5FACCA272EBAD448007EC568 /* ProfileView+Swipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FACCA262EBAD448007EC568 /* ProfileView+Swipe.swift */; };
 		5FE178362EAF17D000FC4AA4 /* TSMarkdownParser in Frameworks */ = {isa = PBXBuildFile; productRef = 5FE178352EAF17D000FC4AA4 /* TSMarkdownParser */; };
 		5FE178442EAF3D1D00FC4AA4 /* lookup.dat in Resources */ = {isa = PBXBuildFile; fileRef = 5FE178382EAF3D1D00FC4AA4 /* lookup.dat */; };
 		5FE178452EAF3D1D00FC4AA4 /* SFSymbols-build.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5FE178392EAF3D1D00FC4AA4 /* SFSymbols-build.ttf */; };
@@ -76,12 +72,6 @@
 		5F2914012EAB09440019DC0F /* ChannelButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelButtonView.swift; sourceTree = "<group>"; };
 		5F2914052EAC462F0019DC0F /* png8.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = png8.swift; sourceTree = "<group>"; };
 		5F2914072EAC4EB00019DC0F /* defaultavatar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = defaultavatar.png; sourceTree = "<group>"; };
-		5F4649B02EBA0F6900EB3585 /* GuildTextVC+Input.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GuildTextVC+Input.swift"; sourceTree = "<group>"; };
-		5F4649B12EBA0F6900EB3585 /* GuildTextVC+Gateway.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GuildTextVC+Gateway.swift"; sourceTree = "<group>"; };
-		5F4649B22EBA0F6900EB3585 /* GuildTextVC+Keyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GuildTextVC+Keyboard.swift"; sourceTree = "<group>"; };
-		5F4649B32EBA0F6900EB3585 /* GuildTextVC+Message.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GuildTextVC+Message.swift"; sourceTree = "<group>"; };
-		5F4649B42EBA0F6900EB3585 /* GuildTextVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GuildTextVC.swift; sourceTree = "<group>"; };
-		5F4649B52EBA0F6900EB3585 /* GuildTextVC+MessageAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GuildTextVC+MessageAction.swift"; sourceTree = "<group>"; };
 		5F50947C2EA4F268002646A2 /* TextVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextVC.swift; sourceTree = "<group>"; };
 		5F5094812EA57D92002646A2 /* SharedValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedValues.swift; sourceTree = "<group>"; };
 		5F5094852EA64674002646A2 /* CustomNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationController.swift; sourceTree = "<group>"; };
@@ -111,6 +101,8 @@
 		5F9F58E02EB6E8CC00A09760 /* MessageView+Gestures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MessageView+Gestures.swift"; sourceTree = "<group>"; };
 		5F9F58E52EB6EBCF00A09760 /* MainVC+Delegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainVC+Delegate.swift"; sourceTree = "<group>"; };
 		5F9F58E72EB6FD3000A09760 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		5FACCA232EBAC163007EC568 /* ForumVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForumVC.swift; sourceTree = "<group>"; };
+		5FACCA262EBAD448007EC568 /* ProfileView+Swipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfileView+Swipe.swift"; sourceTree = "<group>"; };
 		5FE178382EAF3D1D00FC4AA4 /* lookup.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = lookup.dat; sourceTree = "<group>"; };
 		5FE178392EAF3D1D00FC4AA4 /* SFSymbols-build.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFSymbols-build.ttf"; sourceTree = "<group>"; };
 		5FE1783A2EAF3D1D00FC4AA4 /* SFSymbols-black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFSymbols-black.ttf"; sourceTree = "<group>"; };
@@ -145,27 +137,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5F4649AF2EBA0F6900EB3585 /* GuildTextVC */ = {
-			isa = PBXGroup;
-			children = (
-				5F4649B02EBA0F6900EB3585 /* GuildTextVC+Input.swift */,
-				5F4649B12EBA0F6900EB3585 /* GuildTextVC+Gateway.swift */,
-				5F4649B22EBA0F6900EB3585 /* GuildTextVC+Keyboard.swift */,
-				5F4649B32EBA0F6900EB3585 /* GuildTextVC+Message.swift */,
-				5F4649B42EBA0F6900EB3585 /* GuildTextVC.swift */,
-				5F4649B52EBA0F6900EB3585 /* GuildTextVC+MessageAction.swift */,
-			);
-			path = GuildTextVC;
-			sourceTree = "<group>";
-		};
 		5F50947E2EA5789A002646A2 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				5F4649AF2EBA0F6900EB3585 /* GuildTextVC */,
 				5F9F58E42EB6EBBB00A09760 /* MainVC */,
 				5F9F58B62EB42ED600A09760 /* TextVC */,
 				5FEF15152EA4E616005598D3 /* AuthenticationVC.swift */,
 				5F54504F2EACB03E0066AEC6 /* AttachmentVC.swift */,
+				5FACCA232EBAC163007EC568 /* ForumVC.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -173,9 +152,9 @@
 		5F50947F2EA578AB002646A2 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5FACCA252EBAD43A007EC568 /* ProfileView */,
 				5F9F58D92EB6E6CD00A09760 /* MessageView */,
 				5FEF14A72EA4485B005598D3 /* InputView.swift */,
-				5F9F58E72EB6FD3000A09760 /* ProfileView.swift */,
 				5F2914012EAB09440019DC0F /* ChannelButtonView.swift */,
 				5FE178502EB025F700FC4AA4 /* MessageActionView.swift */,
 				5F7987192EB1DD5C0058566C /* ReplyView.swift */,
@@ -304,6 +283,15 @@
 			path = MainVC;
 			sourceTree = "<group>";
 		};
+		5FACCA252EBAD43A007EC568 /* ProfileView */ = {
+			isa = PBXGroup;
+			children = (
+				5F9F58E72EB6FD3000A09760 /* ProfileView.swift */,
+				5FACCA262EBAD448007EC568 /* ProfileView+Swipe.swift */,
+			);
+			path = ProfileView;
+			sourceTree = "<group>";
+		};
 		5FE178372EAF3D1D00FC4AA4 /* SFFonts */ = {
 			isa = PBXGroup;
 			children = (
@@ -420,20 +408,18 @@
 			files = (
 				5F9F58E62EB6EBCF00A09760 /* MainVC+Delegate.swift in Sources */,
 				5F57B8B72E9EEAC600CA2CE2 /* MainVC.swift in Sources */,
+				5FACCA242EBAC163007EC568 /* ForumVC.swift in Sources */,
 				5F9F58C92EB56F4100A09760 /* GuildButtonCell.swift in Sources */,
 				5F2914062EAC462F0019DC0F /* png8.swift in Sources */,
 				5F0F1F872EB834A900CEF378 /* LoginManager.swift in Sources */,
-				5F4649BB2EBA0F6900EB3585 /* GuildTextVC+MessageAction.swift in Sources */,
 				5FEF14A82EA4485B005598D3 /* InputView.swift in Sources */,
-				5F4649B62EBA0F6900EB3585 /* GuildTextVC+Input.swift in Sources */,
 				5F9F58B82EB42EE400A09760 /* TextVC+Gateway.swift in Sources */,
 				5F9F58DB2EB6E71300A09760 /* MessageView+Author.swift in Sources */,
 				5F5094822EA57D92002646A2 /* SharedValues.swift in Sources */,
-				5F4649B72EBA0F6900EB3585 /* GuildTextVC+Gateway.swift in Sources */,
 				5F9F58CB2EB56FB800A09760 /* GuildAvatarCache.swift in Sources */,
+				5FACCA272EBAD448007EC568 /* ProfileView+Swipe.swift in Sources */,
 				5F79871A2EB1DD5C0058566C /* ReplyView.swift in Sources */,
 				5F2914002EAB093C0019DC0F /* DMButtonCell.swift in Sources */,
-				5F4649BA2EBA0F6900EB3585 /* GuildTextVC.swift in Sources */,
 				5F9F58C42EB4311F00A09760 /* GuassianBlur.swift in Sources */,
 				5F9F58E12EB6E8CC00A09760 /* MessageView+Gestures.swift in Sources */,
 				5F9F58DF2EB6E72C00A09760 /* MessageView+Attachments.swift in Sources */,
@@ -451,10 +437,8 @@
 				5F9F58BE2EB4303000A09760 /* TextVC+MessageAction.swift in Sources */,
 				5FE178512EB025F700FC4AA4 /* MessageActionView.swift in Sources */,
 				5F5450502EACB03E0066AEC6 /* AttachmentVC.swift in Sources */,
-				5F4649B92EBA0F6900EB3585 /* GuildTextVC+Message.swift in Sources */,
 				5F9F58C02EB4309300A09760 /* TextVC+Background.swift in Sources */,
 				5FEF15162EA4E616005598D3 /* AuthenticationVC.swift in Sources */,
-				5F4649B82EBA0F6900EB3585 /* GuildTextVC+Keyboard.swift in Sources */,
 				5FEF14A42EA373C2005598D3 /* MessageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

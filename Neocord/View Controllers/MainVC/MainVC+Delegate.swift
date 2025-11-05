@@ -47,6 +47,10 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChannelButtonCell.reuseID, for: indexPath) as! ChannelButtonCell
                 cell.configure(with: text)
                 return cell
+            } else if let forum = item as? GuildForum {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChannelButtonCell.reuseID, for: indexPath) as! ChannelButtonCell
+                cell.configure(with: forum)
+                return cell
             } else {
                 fatalError("Unknown channel type")
             }
@@ -76,10 +80,18 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             }
 
         case channelsCollectionView:
-            guard let channel = displayedChannels[indexPath.item] as? GuildText else { return }
-            //MARK: Must manually subscribe or else big guild's channel's events will not be picked up, leading to no websocket messages
-            clientUser.subscribeToChannel(self.activeGuild!, channel)
-            navigationController?.pushViewController(TextViewController(channel: channel), animated: true)
+            let channel = displayedChannels[indexPath.item]
+            switch channel.type {
+            case .guildText:
+                //MARK: Must manually subscribe or else big guild's channel's events will not be picked up, leading to no websocket messages
+                clientUser.subscribeToChannel(self.activeGuild!, channel)
+                navigationController?.pushViewController(TextViewController(channel: channel), animated: true)
+            case .guildForum:
+                clientUser.subscribeToChannel(self.activeGuild!, channel)
+                navigationController?.pushViewController(ForumViewController(forum: channel as! GuildForum), animated: true)
+            default:
+                break
+            }
 
         default: break
         }
@@ -95,7 +107,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         case channelsCollectionView:
             let item = displayedChannels[indexPath.item]
             switch item.type {
-            case .guildCategory, .guildText: return CGSize(width: width, height: 40)
+            case .guildCategory, .guildText, .guildForum: return CGSize(width: width, height: 40)
             default: return .zero
             }
         default: return .zero
@@ -132,23 +144,23 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             loadingLabel.centerXAnchor.constraint(equalTo: activeContentView.centerXAnchor),
             loadingLabel.centerYAnchor.constraint(equalTo: activeContentView.centerYAnchor)
         ])
-
+        
+        self.fetchChannels(for: guild) {
+            DispatchQueue.main.async {
+                loadingLabel.removeFromSuperview()
+                self.flattenChannelsForDisplay()
+                UIView.transition(with: self.channelsCollectionView, duration: 0.25, options: .transitionCrossDissolve) {
+                    self.channelsCollectionView.alpha = 1
+                    self.channelsCollectionView.reloadData()
+                }
+                self.updateTitle(guild.name ?? "Unknown Guild")
+            }
+        }
+        
         clientUser.getFullGuild(guild) { [weak self] guilds, _ in
             guard let self = self, let fullGuild = guilds.values.first else { return }
             self.activeGuild = fullGuild
             if let index = self.guilds.firstIndex(where: { $0.id == fullGuild.id }) { self.guilds[index] = fullGuild }
-
-            self.fetchChannels(for: fullGuild) {
-                DispatchQueue.main.async {
-                    loadingLabel.removeFromSuperview()
-                    self.flattenChannelsForDisplay()
-                    UIView.transition(with: self.channelsCollectionView, duration: 0.25, options: .transitionCrossDissolve) {
-                        self.channelsCollectionView.alpha = 1
-                        self.channelsCollectionView.reloadData()
-                    }
-                    self.updateTitle(fullGuild.name ?? "Unknown Guild")
-                }
-            }
         }
     }
 

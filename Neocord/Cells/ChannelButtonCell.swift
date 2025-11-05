@@ -12,7 +12,7 @@ class ChannelButtonCell: UICollectionViewCell {
     private var channelIcon: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
-        iv.layer.cornerRadius = 20
+        iv.layer.cornerRadius = 0
         iv.layer.masksToBounds = true
         return iv
     }()
@@ -82,31 +82,26 @@ class ChannelButtonCell: UICollectionViewCell {
     }
     
     func configure(with channel: GuildChannel) {
-        self.channelNameLabel.text = channel.name ?? "Unknown Channel"
+        channelNameLabel.text = channel.name ?? "Unknown Channel"
         
-        // Set an icon depending on type
         let iconName: String
         switch channel.type {
-        case .guildText:
-            iconName = "number"
-        case .guildVoice:
-            iconName = "speaker.wave.2"
-        default:
-            iconName = "questionmark"
+        case .guildText: iconName = "number"
+        case .guildVoice: iconName = "speaker.wave.2"
+        case .guildForum: iconName = "bubble.left.and.text.bubble.right"
+        case .publicThread, .privateThread: iconName = "text.bubble"
+        default: iconName = "questionmark"
         }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            let image = UIImage(systemName: iconName)
-            DispatchQueue.main.async {
-                self.channelIcon.image = image
-                if let bg = self.backgroundGlass as? LiquidGlassView {
-                    bg.tintColorForGlass = .discordGray
-                } else {
-                    self.backgroundGlass?.backgroundColor = .discordGray
-                }
-            }
+
+        channelIcon.image = UIImage(systemName: iconName)
+
+        if let glass = backgroundGlass as? LiquidGlassView {
+            glass.tintColorForGlass = .discordGray
+        } else {
+            backgroundGlass?.backgroundColor = .discordGray
         }
     }
+
 }
 
 

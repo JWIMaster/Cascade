@@ -96,8 +96,8 @@ public class CustomNavigationController: UINavigationController {
         titleLabel.textColor = .white
         titleLabel.backgroundColor = .clear
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.lineBreakMode = .byClipping
-        titleLabel.preferredMaxLayoutWidth = 10
+        titleLabel.lineBreakMode = .byTruncatingTail
+        
         titleLabel.numberOfLines = 1
         customNavBar.addSubview(titleLabel)
 
@@ -110,7 +110,18 @@ public class CustomNavigationController: UINavigationController {
         backButton.addTarget(self, action: #selector(goBack), for: .touchUpInside)
         titleLabel.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor).isActive = true
         titleLabel.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor).isActive = true
-
+        
+        let maxWidthConstraint = NSLayoutConstraint(
+            item: titleLabel,
+            attribute: .width,
+            relatedBy: .lessThanOrEqual,
+            toItem: customNavBar,
+            attribute: .width,
+            multiplier: 0.55,
+            constant: 0 // leave room for back button
+        )
+        customNavBar.addConstraint(maxWidthConstraint)
+        
         NSLayoutConstraint.activate([
             
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 16),
@@ -124,6 +135,7 @@ public class CustomNavigationController: UINavigationController {
 
     func updateTitle(for viewController: UIViewController?) {
         titleLabel.text = viewController?.title
+        titleLabel.sizeThatFits(.init(width: self.navBarFrame.frame.width*0.8, height: self.navBarFrame.frame.height))
         //titleLabel.setIsHidden(viewController == viewControllers.first, animated: true)
     }
 

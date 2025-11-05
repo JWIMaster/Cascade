@@ -17,7 +17,7 @@ import LiveFrost
 
 class TextViewController: UIViewController, UIGestureRecognizerDelegate {
     public var dm: DMChannel?
-    public var channel: GuildText?
+    public var channel: GuildChannel?
     var textInputView: InputView?
     var messageIDsInStack = Set<Snowflake>()
     var userIDsInStack = Set<Snowflake>()
@@ -57,7 +57,7 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var profileBlur = LiquidGlassView(blurRadius: 12, cornerRadius: 0, snapshotTargetView: nil, disableBlur: false, filterOptions: [])
     
-    public init(dm: DMChannel? = nil, channel: GuildText? = nil) {
+    public init(dm: DMChannel? = nil, channel: GuildChannel? = nil) {
         super.init(nibName: nil, bundle: nil)
         self.dm = dm
         self.channel = channel
