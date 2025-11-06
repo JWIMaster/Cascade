@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import UIKitCompatKit
+//import UIKitCompatKit
 import FoundationCompatKit
 import SwiftcordLegacy
 import UIKitExtensions
@@ -72,7 +72,12 @@ extension TextViewController {
     func presentProfileView(for user: User, _ member: GuildMember? = nil) {
         guard let parentView = self.view else { return }
         let profile = ProfileView(user: user, member: member)
-        let topOffset: CGFloat = self.navigationBarHeight
+        var topOffset: CGFloat
+        if #available(iOS 11.0, *) {
+            topOffset = self.navigationBarHeight + view.safeAreaInsets.top
+        } else {
+            topOffset = self.navigationBarHeight
+        }
         let height = parentView.bounds.height - topOffset
         
         // Start off-screen
@@ -85,14 +90,16 @@ extension TextViewController {
         
         parentView.addSubview(profile)
         profileView = profile
-        
+        if ThemeEngine.enableAnimations {
+            profileView?.springAnimation(bounceAmount: -20)
+        }
         
         self.containerView.isUserInteractionEnabled = false
         // Animate in
         
         
         
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
             profile.frame.origin.y = topOffset
             //self.profileBlur.blurRadius = 6
             if let nav = UIApplication.shared.keyWindow?.rootViewController as? CustomNavigationController {
@@ -111,7 +118,7 @@ extension TextViewController {
         //self.profileBlur.frameInterval = 2
         profile.removeFromSuperview()
         self.profileView = nil
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut, animations: {
             profile.frame.origin.y = parent.bounds.height
             self.containerView.layer.filters = nil
             self.profileBlur.blurRadius = 0

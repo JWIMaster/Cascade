@@ -32,13 +32,19 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     let timestamp = UILabel()
     let edited = UILabel()
     let messageBackground: UIView? = {
-        switch device {
-        case .a4:
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let background = UIView()
+                background.layer.cornerRadius = 22
+                return background
+            default:
+                return LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
+            }
+        } else {
             let background = UIView()
             background.layer.cornerRadius = 22
             return background
-        default:
-            return LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
         }
     }()
     var slClient: SLClient?

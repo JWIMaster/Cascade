@@ -107,6 +107,12 @@ extension ForumViewController: UICollectionViewDelegateFlowLayout, UICollectionV
         cell.configure(with: thread)
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if ThemeEngine.enableAnimations {
+            cell.springAnimation()
+        }
+    }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let thread = threads[indexPath.item]

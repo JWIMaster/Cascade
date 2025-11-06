@@ -17,7 +17,8 @@ public class CustomNavigationController: UINavigationController {
             let glassView = LiquidGlassView(blurRadius: 6, cornerRadius: 12, snapshotTargetView: nil, disableBlur: PerformanceManager.disableBlur)
             glassView.frameInterval = PerformanceManager.frameInterval
             glassView.scaleFactor = PerformanceManager.scaleFactor
-            glassView.solidViewColour = UIColor(red: 0.2, green: 0.2, blue: 0.22, alpha: 0.8)
+            glassView.solidViewColour = .discordGray.withAlphaComponent(0.8)
+            glassView.tintColorForGlass = .discordGray.withAlphaComponent(0.5)
             glassView.translatesAutoresizingMaskIntoConstraints = false
             return glassView
         }
@@ -67,7 +68,7 @@ public class CustomNavigationController: UINavigationController {
 
     private func layoutCustomNavBar() {
         guard let customNavBar = customNavBar else { return }
-        customNavBar.widthAnchor.constraint(equalToConstant: navBarFrame.frame.width*0.9).isActive = true
+        customNavBar.widthAnchor.constraint(equalToConstant: navBarFrame.frame.width-20).isActive = true
         customNavBar.heightAnchor.constraint(equalToConstant: navBarFrame.frame.height).isActive = true
         customNavBar.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
         if #available(iOS 11.0, *) {

@@ -209,9 +209,11 @@ public class InputView: UIView, UITextViewDelegate {
         }
     }
     
+    var buttonIsActive: Bool = true
     
     private func replyMessageAction() {
-        self.sendButton.isUserInteractionEnabled = false
+        guard buttonIsActive == true else { return }
+        self.buttonIsActive = false
         
         guard let channel = self.channel, let replyMessage = self.replyMessage else { return }
         
@@ -223,13 +225,14 @@ public class InputView: UIView, UITextViewDelegate {
             self.editMessage = nil
             self.changeInputMode(to: .send)
             self.textViewDidChange(self.textView)
-            self.sendButton.isUserInteractionEnabled = true
+            self.buttonIsActive = false
             //self.removeCancelButton()
         }
     }
     
     private func sendMessageAction() {
-        self.sendButton.isUserInteractionEnabled = false
+        guard buttonIsActive == true else { return }
+        self.buttonIsActive = false
         
         guard let channel = self.channel else { return }
         
@@ -239,12 +242,13 @@ public class InputView: UIView, UITextViewDelegate {
             guard let self = self else { return }
             self.textView.text = nil
             self.textViewDidChange(self.textView)
-            self.sendButton.isUserInteractionEnabled = true
+            self.buttonIsActive = true
         }
     }
     
     private func editMessageAction() {
-        self.sendButton.isUserInteractionEnabled = false
+        guard buttonIsActive == true else { return }
+        self.buttonIsActive = false
         
         guard let channel = self.channel, let editMessage = self.editMessage else { return }
         
@@ -256,7 +260,7 @@ public class InputView: UIView, UITextViewDelegate {
             self.editMessage = nil
             self.changeInputMode(to: .send)
             self.textViewDidChange(self.textView)
-            self.sendButton.isUserInteractionEnabled = true
+            self.buttonIsActive = true
             //self.removeCancelButton()
         }
     }

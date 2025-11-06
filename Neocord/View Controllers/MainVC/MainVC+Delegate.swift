@@ -15,7 +15,7 @@ import LiveFrost
 // MARK: - Collection View
 // MARK: - Collection View
 extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch collectionView {
         case dmCollectionView: return dms.count
@@ -24,19 +24,19 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         default: fatalError("Unknown collection view")
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch collectionView {
         case dmCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DMButtonCell.reuseID, for: indexPath) as! DMButtonCell
             cell.configure(with: dms[indexPath.item])
             return cell
-
+            
         case sidebarCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SidebarButtonCell.reuseID, for: indexPath) as! SidebarButtonCell
             cell.configure(with: sidebarButtons[indexPath.item])
             return cell
-
+            
         case channelsCollectionView:
             let item = displayedChannels[indexPath.item]
             if let category = item as? GuildCategory {
@@ -54,19 +54,19 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             } else {
                 fatalError("Unknown channel type")
             }
-
+            
         default:
             fatalError("Unknown collection view")
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
         case dmCollectionView:
             let dm = dms[indexPath.item]
             if dm.type == .dm { navigationController?.pushViewController(TextViewController(dm: dm as! DM), animated: true) }
             else if dm.type == .groupDM { navigationController?.pushViewController(TextViewController(dm: dm as! GroupDM), animated: true) }
-
+            
         case sidebarCollectionView:
             let button = sidebarButtons[indexPath.item]
             switch button {
@@ -78,7 +78,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
                 showContentView(channelsCollectionView)
                 setupChannelCollectionView(for: guild)
             }
-
+            
         case channelsCollectionView:
             let channel = displayedChannels[indexPath.item]
             switch channel.type {
@@ -92,11 +92,11 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             default:
                 break
             }
-
+            
         default: break
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width - 20
         switch collectionView {
@@ -113,26 +113,36 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         default: return .zero
         }
     }
-
+    
+    
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if ThemeEngine.enableAnimations {
+            cell.springAnimation()
+        }
+    }
+    
+    
+    
     // MARK: Channels Setup
     func setupChannelCollectionView(for guild: Guild) {
         guard activeGuild?.id != guild.id || displayedChannels.isEmpty || !guild.fullGuild else { return }
-
+        
         activeGuild = guild
         updateTitle(guild.name ?? "Loading…")
         if activeContentView.subviews.first != channelsCollectionView || activeContentView.subviews.first == dmCollectionView{
             showContentView(channelsCollectionView)
         }
         
-
+        
         if !guild.channels.isEmpty, guild.fullGuild {
             flattenChannelsForDisplay()
             channelsCollectionView.reloadData()
             return
         }
-
+        
         UIView.animate(withDuration: 0.25) { self.channelsCollectionView.alpha = 0 }
-
+        
         let loadingLabel = UILabel()
         loadingLabel.text = "Loading channels…"
         loadingLabel.textColor = .lightGray
@@ -163,8 +173,8 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             if let index = self.guilds.firstIndex(where: { $0.id == fullGuild.id }) { self.guilds[index] = fullGuild }
         }
     }
-
-    private func updateTitle(_ title: String) {
+    
+    func updateTitle(_ title: String) {
         self.title = title
         (navigationController as? CustomNavigationController)?.updateTitle(for: self)
     }
@@ -200,3 +210,18 @@ extension ViewController {
     }
 }
 
+extension UIView {
+    func springAnimation(scaleDuration: CGFloat = 0.3, bounceDuration: CGFloat = 0.2, scaleOptions: UIView.AnimationOptions = [.curveEaseOut, .allowUserInteraction], bounceOptions: UIView.AnimationOptions = [.curveEaseInOut, .allowUserInteraction], bounceAmount: CGFloat = -6, delay: CGFloat = 0) {
+        self.alpha = 0
+        self.transform = CGAffineTransform(translationX: 0, y: 50).scaledBy(x: 0.8, y: 0.8)
+
+        UIView.animate(withDuration: scaleDuration, delay: delay, options: scaleOptions, animations: {
+            self.alpha = 1
+            self.transform = CGAffineTransform(translationX: 0, y: bounceAmount)
+        }, completion: { _ in
+            UIView.animate(withDuration: bounceDuration, delay: 0, options: bounceOptions, animations: {
+                self.transform = .identity
+            }, completion: nil)
+        })
+    }
+}

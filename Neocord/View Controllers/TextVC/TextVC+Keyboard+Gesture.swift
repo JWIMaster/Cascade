@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import UIKitCompatKit
+//import UIKitCompatKit
 import FoundationCompatKit
 import SwiftcordLegacy
 import UIKitExtensions
@@ -49,9 +49,10 @@ extension TextViewController {
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        if touch.view is UIControl || touch.view is UITextView {
+        if touch.view is UIControl || touch.view is UITextView || touch.view is InputView {
             return false
         }
+        
         return true
     }
     
@@ -67,10 +68,18 @@ extension TextViewController {
             let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
             let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
         else { return }
-
-        let keyboardHeight = keyboardFrame.cgRectValue.height
+        var keyboardHeight: CGFloat
+        if #available(iOS 11.0, *) {
+            keyboardHeight = keyboardFrame.cgRectValue.height - view.safeAreaInsets.bottom
+        } else {
+            keyboardHeight = keyboardFrame.cgRectValue.height
+        }
+        
         guard containerViewBottomConstraint.constant != -keyboardHeight else { return }
-
+        
+        
+        
+        
         containerViewBottomConstraint.constant = -keyboardHeight
 
         self.tapGesture.isEnabled = true

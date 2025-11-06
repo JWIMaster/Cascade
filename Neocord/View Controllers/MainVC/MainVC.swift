@@ -11,6 +11,7 @@ import UIKitExtensions
 import UIKitCompatKit
 import iOS6BarFix
 import LiveFrost
+import SFSymbolsCompatKit
 
 public typealias UIStackView = UIKitCompatKit.UIStackView
 
@@ -24,18 +25,31 @@ class ViewController: UIViewController {
     var containerView = UIView()
     
     var offset: CGFloat {
-        if #available(iOS 6.0.1, *) {
-            return UIApplication.shared.statusBarFrame.height+(self.navigationController?.navigationBar.frame.height)!
-        } else {
-            return UIApplication.shared.statusBarFrame.height*2+(self.navigationController?.navigationBar.frame.height)!
-        }
+        return UIApplication.shared.statusBarFrame.height+(self.navigationController?.navigationBar.frame.height)!
     }
     
     var sidebarButtons: [SidebarButtonType] {
         return [.dms] + guilds.map { .guild($0) }
     }
     
-    let activeContentView = UIView()
+    let activeContentView: UIView = {
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let bg = UIView()
+                bg.backgroundColor = .discordGray.withIncreasedSaturation(factor: 0.3)
+                return bg
+            default:
+                let glass = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
+                glass.tintColorForGlass = .discordGray.withAlphaComponent(0.5)
+                return glass
+            }
+        } else {
+            let bg = UIView()
+            bg.backgroundColor = .discordGray.withIncreasedSaturation(factor: 0.3)
+            return bg
+        }
+    }()
     
     lazy var dmCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -87,85 +101,192 @@ class ViewController: UIViewController {
     }()
     
     var sidebarBackgroundView: UIView? = {
-        switch device {
-        case .a4:
-            return UIView()
-        default:
-            let glass = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
-            glass.translatesAutoresizingMaskIntoConstraints = false
-            return glass
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let bg = UIView()
+                bg.backgroundColor = .discordGray.withIncreasedSaturation(factor: 0.3)
+                return bg
+            default:
+                let glass = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
+                glass.translatesAutoresizingMaskIntoConstraints = false
+                glass.tintColorForGlass = .discordGray.withAlphaComponent(0.5)
+                return glass
+            }
+        } else {
+            let bg = UIView()
+            bg.backgroundColor = .discordGray.withIncreasedSaturation(factor: 0.3)
+            return bg
         }
     }()
     
+    var toolbar = CustomToolbar()
+    
+    var animatedIndexPathsPerCollectionView: [UICollectionView: Set<IndexPath>] = [:]
+    
+    var activeGuild: Guild?
+    
+    var displayedChannels: [GuildChannel] = []
+    
+    var settingsContainerView = SettingsView()
+    
+    var mainContainerView = UIView()
+    
+    var settingsButton: UIButton = {
+        let button1 = UIButton(type: .custom)
+        button1.setTitle("Settings", for: .normal)
+        button1.setImage(.init(systemName:"gear", tintColor: .white), for: .normal)
+        return button1
+    }()
+    
+    var mainMenuButton: UIButton = {
+        let button2 = UIButton(type: .custom)
+        button2.setTitle("Menu", for: .normal)
+        button2.setImage(.init(systemName:"list.bullet.below.rectangle", tintColor: .white), for: .normal)
+        return button2
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupMainView()
+    }
+    
+    func setupMainView() {
         title = "Direct Messages"
         view.backgroundColor = .discordGray
         
         guard let sidebarBackgroundView = sidebarBackgroundView else { return }
         
-        clientUser.setIntents(intents: .directMessages, .directMessagesTyping)
         clientUser.connect()
         if #unavailable(iOS 7.0.1) {
             SetStatusBarBlackTranslucent()
             SetWantsFullScreenLayout(self, true)
         }
-        view.addSubview(containerView)
+        view.addSubview(mainContainerView)
+        mainContainerView.addSubview(containerView)
+        
+        mainContainerView.addSubview(settingsContainerView)
+        settingsContainerView.translatesAutoresizingMaskIntoConstraints = false
+        settingsContainerView.isHidden = true  // hide it initially
+        
         containerView.addSubview(sidebarBackgroundView)
         
         containerView.addSubview(activeContentView)
         activeContentView.translatesAutoresizingMaskIntoConstraints = false
         sidebarBackgroundView.addSubview(sidebarCollectionView)
         
+        
+        
+        view.addSubview(toolbar)
+        toolbar.translatesAutoresizingMaskIntoConstraints = false
+        
         setupConstraints()
         fetchDMs()
         fetchGuilds()
+        
+        
+        settingsButton.addAction(for: .touchUpInside) {
+            self.settingsButton.isUserInteractionEnabled = false
+            self.mainMenuButton.isUserInteractionEnabled = true
+            self.transition(from: self.containerView, to: self.settingsContainerView, direction: .left, in: self.mainContainerView, completionHandler: {
+                
+            })
+        }
+        
+        
+        mainMenuButton.addAction(for: .touchUpInside) {
+            self.settingsButton.isUserInteractionEnabled = true
+            self.mainMenuButton.isUserInteractionEnabled = false
+            self.transition(from: self.settingsContainerView, to: self.containerView, direction: .right, in: self.mainContainerView, completionHandler: {
+                
+            })
+        }
+        
+        toolbar.setItems([UIButton(), mainMenuButton, settingsButton, UIButton()])
+        
+        switch device {
+        case .a4, .a5, .a6:
+            break
+        default:
+            activeContentView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+            toolbar.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+            sidebarBackgroundView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+        }
+    }
+    
+    func refreshView() {
+        self.view.setNeedsLayout()
+        self.view.layoutIfNeeded()
     }
     
     func setupConstraints() {
         guard let sidebarBackgroundView = sidebarBackgroundView else { return }
-        containerView.pinToEdges(of: view, insetBy: .init(top: offset, left: 0, bottom: 0, right: 0))
-        
-        if #available(iOS 11.0, *) {
-            let guide: UIKit.UILayoutGuide = containerView.safeAreaLayoutGuide
-            view.addConstraint(.init(item: sidebarBackgroundView, attribute: .leading, relatedBy: .equal, toItem: containerView, attribute: .leading, multiplier: 1, constant: 10))
-            view.addConstraint(.init(item: sidebarBackgroundView, attribute: .top, relatedBy: .equal, toItem: containerView, attribute: .top, multiplier: 1, constant: 10))
-            view.addConstraint(.init(item: sidebarBackgroundView, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: 64))
-            view.addConstraint(.init(item: sidebarBackgroundView, attribute: .bottom, relatedBy: .equal, toItem: guide, attribute: .bottom, multiplier: 1, constant: 0))
-        } else {
+
+        // MARK: Toolbar layout
+        if let customController = navigationController as? CustomNavigationController {
             NSLayoutConstraint.activate([
-                sidebarBackgroundView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
-                sidebarBackgroundView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
-                sidebarBackgroundView.widthAnchor.constraint(equalToConstant: 64),
-                sidebarBackgroundView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+                toolbar.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                toolbar.widthAnchor.constraint(equalToConstant: customController.navBarFrame.frame.width - 20),
+                toolbar.heightAnchor.constraint(equalToConstant: customController.navBarFrame.frame.height)
             ])
+            
+            if #available(iOS 11.0, *) {
+                view.addConstraint(toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10))
+            } else {
+                toolbar.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10).isActive = true
+            }
         }
-        
+
+        // MARK: Container view
+        containerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            activeContentView.leadingAnchor.constraint(equalTo: sidebarBackgroundView.trailingAnchor),
-            activeContentView.topAnchor.constraint(equalTo: containerView.topAnchor),
-            activeContentView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            activeContentView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+            mainContainerView.topAnchor.constraint(equalTo: view.topAnchor, constant: offset),
+            mainContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mainContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mainContainerView.bottomAnchor.constraint(equalTo: toolbar.topAnchor)
         ])
         
+        containerView.pinToEdges(of: mainContainerView)
+        
+        settingsContainerView.pinToEdges(of: mainContainerView, insetBy: .init(top: 10, left: 10, bottom: 10, right: 10))
+
+
+        // MARK: Sidebar
+        sidebarBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            sidebarBackgroundView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            sidebarBackgroundView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            sidebarBackgroundView.widthAnchor.constraint(equalToConstant: 64),
+            sidebarBackgroundView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
+        ])
+
+        // MARK: Active content area
+        activeContentView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            activeContentView.leadingAnchor.constraint(equalTo: sidebarBackgroundView.trailingAnchor, constant: 10),
+            activeContentView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            activeContentView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            activeContentView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
+        ])
+
+        // MARK: Sidebar collection
+        sidebarCollectionView.translatesAutoresizingMaskIntoConstraints = false
         sidebarCollectionView.pinToEdges(of: sidebarBackgroundView, insetBy: .init(top: 6, left: 6, bottom: 6, right: 6))
     }
+
     
     
     func showContentView(_ view: UIView) {
         activeContentView.subviews.forEach { $0.removeFromSuperview() }
         
         activeContentView.addSubview(view)
+        view.layer.cornerRadius = 22
         view.translatesAutoresizingMaskIntoConstraints = false
-        activeContentView.pinToEdges(of: view)
+        view.pinToEdges(of: activeContentView)
     }
     
     
-    var activeGuild: Guild?
-    
-    // This will include both categories and channels
-    var displayedChannels: [GuildChannel] = []
+   
 
     func flattenChannelsForDisplay() {
         guard let guild = activeGuild else { return }
@@ -203,6 +324,53 @@ class ViewController: UIViewController {
     }
 
 
+    enum SlideDirection {
+        case left
+        case right
+    }
+    
+    func transition(from oldView: UIView?, to newView: UIView, direction: SlideDirection, in container: UIView, animated: Bool = true, completionHandler: () -> ()) {
+        guard newView !== oldView else { return } // No need to animate if it's the same view
+        
+        // 1. Make sure both views exist and are visible
+        oldView?.isHidden = false
+        newView.isHidden = false
+        // 3. Prepare transforms
+        let width = container.bounds.width
+        let offset = direction == .left ? width : -width
+        newView.transform = CGAffineTransform(translationX: offset, y: 0)
+        
+        // 4. Animate
+        let animations = {
+            oldView?.transform = CGAffineTransform(translationX: -offset, y: 0)
+            newView.transform = .identity
+        }
+        
+        let completion: (Bool) -> Void = { _ in
+            // Reset transforms so layout stays normal
+            oldView?.transform = .identity
+            newView.transform = .identity
+            
+            // ✅ Hide the old view only *after* transition
+            oldView?.isHidden = true
+            
+            // ✅ Bring the new view to the front
+            container.bringSubviewToFront(newView)
+            completionHandler()
+        }
+        
+        if animated {
+            UIView.animate(withDuration: 0.35,
+                           delay: 0,
+                           options: [.curveEaseInOut],
+                           animations: animations,
+                           completion: completion)
+            newView.springAnimation()
+        } else {
+            animations()
+            completion(true)
+        }
+    }
 
 
 

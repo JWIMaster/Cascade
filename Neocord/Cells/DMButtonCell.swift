@@ -26,18 +26,24 @@ class DMButtonCell: UICollectionViewCell {
     }()
     
     private var backgroundGlass: UIView? = {
-        switch device {
-        case .a4:
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let bg = UIView()
+                bg.layer.cornerRadius = 22
+                return bg
+            default:
+                let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
+                lg.shadowOpacity = 0.6
+                lg.shadowRadius = 0
+                lg.solidViewColour = .clear
+                lg.translatesAutoresizingMaskIntoConstraints = false
+                return lg
+            }
+        } else {
             let bg = UIView()
             bg.layer.cornerRadius = 22
             return bg
-        default:
-            let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 22, snapshotTargetView: nil, disableBlur: true)
-            lg.shadowOpacity = 0.6
-            lg.shadowRadius = 0
-            lg.solidViewColour = .clear
-            lg.translatesAutoresizingMaskIntoConstraints = false
-            return lg
         }
     }()
     
@@ -100,10 +106,12 @@ class DMButtonCell: UICollectionViewCell {
                     
                     DispatchQueue.main.async {
                         self.dmAuthorAvatar.image = resized
-                        if let backgroundGlass = self.backgroundGlass as? LiquidGlassView {
-                            backgroundGlass.tintColorForGlass = color
-                        } else {
-                            self.backgroundGlass?.backgroundColor = color
+                        if ThemeEngine.enableProfileTinting {
+                            if let backgroundGlass = self.backgroundGlass as? LiquidGlassView {
+                                backgroundGlass.tintColorForGlass = color
+                            } else {
+                                self.backgroundGlass?.backgroundColor = color
+                            }
                         }
                     }
                     
@@ -117,10 +125,12 @@ class DMButtonCell: UICollectionViewCell {
                 let resized = UIImage(named: "defaultavatar")!.resizeImage(UIImage(named: "defaultavatar")!, targetSize: CGSize(width: 40, height: 40))
                 DispatchQueue.main.async {
                     self.dmAuthorAvatar.image = resized
-                    if let backgroundGlass = self.backgroundGlass as? LiquidGlassView {
-                        backgroundGlass.tintColorForGlass = .blue.withAlphaComponent(0.5)
-                    } else {
-                        self.backgroundGlass?.backgroundColor = .blue.withAlphaComponent(0.5)
+                    if ThemeEngine.enableProfileTinting {
+                        if let backgroundGlass = self.backgroundGlass as? LiquidGlassView {
+                            backgroundGlass.tintColorForGlass = .blue.withAlphaComponent(0.5)
+                        } else {
+                            self.backgroundGlass?.backgroundColor = .blue.withAlphaComponent(0.5)
+                        }
                     }
                 }
             }

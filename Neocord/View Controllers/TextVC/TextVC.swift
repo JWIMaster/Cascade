@@ -15,7 +15,7 @@ import iOS6BarFix
 import LiveFrost
 
 
-class TextViewController: UIViewController, UIGestureRecognizerDelegate {
+class TextViewController: UIViewController, UIGestureRecognizerDelegate, UIScrollViewDelegate {
     public var dm: DMChannel?
     public var channel: GuildChannel?
     var textInputView: InputView?
@@ -99,6 +99,8 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate {
         setupConstraints()
         getMessages()
         attachGatewayObservers()
+        addTopAndBottomShadows(to: self.view, shadowHeight: 50)
+        
         //animatedBackground()
         
         guard let gateway = clientUser.gateway else { return }
@@ -118,6 +120,7 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate {
         view.addSubview(containerView)
         containerView.addSubview(scrollView)
         scrollView.addSubview(messageStack)
+        scrollView.delegate = self
         
         containerView.alpha = 0
         
@@ -135,8 +138,42 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate {
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
         ])
         
-        containerViewBottomConstraint = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        containerViewBottomConstraint.isActive = true
+        if #available(iOS 11.0, *) {
+            containerViewBottomConstraint = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            view.addConstraint(containerViewBottomConstraint)
+        } else {
+            containerViewBottomConstraint = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            containerViewBottomConstraint.isActive = true
+        }
+        
+    }
+    
+    func addTopAndBottomShadows(to view: UIView, shadowHeight: CGFloat = 50) {
+        // Top shadow
+        let topShadow = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: shadowHeight))
+        let topGradient = CAGradientLayer()
+        topGradient.frame = topShadow.bounds
+        topGradient.colors = [UIColor.black.withAlphaComponent(0.3).cgColor, UIColor.clear.cgColor]
+        topGradient.startPoint = CGPoint(x: 0.5, y: 0)
+        topGradient.endPoint = CGPoint(x: 0.5, y: 1)
+        topShadow.layer.addSublayer(topGradient)
+        topShadow.isUserInteractionEnabled = false
+        view.addSubview(topShadow)
+        
+        // Bottom shadow
+        let bottomShadow = UIView(frame: CGRect(x: 0, y: view.bounds.height - shadowHeight, width: view.bounds.width, height: shadowHeight))
+        let bottomGradient = CAGradientLayer()
+        bottomGradient.frame = bottomShadow.bounds
+        bottomGradient.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.3).cgColor]
+        bottomGradient.startPoint = CGPoint(x: 0.5, y: 0)
+        bottomGradient.endPoint = CGPoint(x: 0.5, y: 1)
+        bottomShadow.layer.addSublayer(bottomGradient)
+        bottomShadow.isUserInteractionEnabled = false
+        view.addSubview(bottomShadow)
+        
+        // Optional: make sure shadows resize with the view
+        topShadow.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
+        bottomShadow.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
     }
     
     
@@ -151,5 +188,31 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
   
+    var currentlyVisibleViews = NSHashTable<UIView>.weakObjects()
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if ThemeEngine.enableAnimations {
+            switch device {
+            case .a4, .a5, .a6:
+                break
+            default:
+                for view in messageStack.arrangedSubviews {
+                    let viewFrameInScroll = scrollView.convert(view.frame, from: view.superview)
+                    let isVisibleNow = scrollView.bounds.intersects(viewFrameInScroll)
+                    
+                    if isVisibleNow && !currentlyVisibleViews.contains(view) {
+                        currentlyVisibleViews.add(view)
+                        view.springAnimation(bounceAmount: -4)
+                    } else if !isVisibleNow && currentlyVisibleViews.contains(view) {
+                        currentlyVisibleViews.remove(view)
+                    }
+                }
+            }
+        }
+    }
+
 
 }
+
+
+

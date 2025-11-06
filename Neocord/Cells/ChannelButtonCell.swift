@@ -27,18 +27,24 @@ class ChannelButtonCell: UICollectionViewCell {
     }()
     
     private var backgroundGlass: UIView? = {
-        switch device {
-        case .a4:
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let bg = UIView()
+                bg.layer.cornerRadius = 22
+                return bg
+            default:
+                let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 14, snapshotTargetView: nil, disableBlur: true)
+                lg.shadowOpacity = 0.6
+                lg.shadowRadius = 0
+                lg.solidViewColour = .clear
+                lg.translatesAutoresizingMaskIntoConstraints = false
+                return lg
+            }
+        } else {
             let bg = UIView()
             bg.layer.cornerRadius = 22
             return bg
-        default:
-            let lg = LiquidGlassView(blurRadius: 0, cornerRadius: 14, snapshotTargetView: nil, disableBlur: true)
-            lg.shadowOpacity = 0.6
-            lg.shadowRadius = 0
-            lg.solidViewColour = .clear
-            lg.translatesAutoresizingMaskIntoConstraints = false
-            return lg
         }
     }()
     
@@ -93,7 +99,7 @@ class ChannelButtonCell: UICollectionViewCell {
         default: iconName = "questionmark"
         }
 
-        channelIcon.image = UIImage(systemName: iconName)
+        channelIcon.image = UIImage(systemName: iconName, tintColor: .white)
 
         if let glass = backgroundGlass as? LiquidGlassView {
             glass.tintColorForGlass = .discordGray

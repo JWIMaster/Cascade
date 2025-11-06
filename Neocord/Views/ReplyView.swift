@@ -15,13 +15,19 @@ import FoundationCompatKit
 
 public class ReplyMessageView: UIView, UIGestureRecognizerDelegate {
     let messageBackground: UIView? = {
-        switch device {
-        case .a4:
+        if ThemeEngine.enableGlass {
+            switch device {
+            case .a4:
+                let bg = UIView()
+                bg.layer.cornerRadius = 14
+                return bg
+            default:
+                return LiquidGlassView(blurRadius: 0, cornerRadius: 14, snapshotTargetView: nil, disableBlur: true)
+            }
+        } else {
             let bg = UIView()
             bg.layer.cornerRadius = 14
             return bg
-        default:
-            return LiquidGlassView(blurRadius: 0, cornerRadius: 14, snapshotTargetView: nil, disableBlur: true)
         }
     }()
     
@@ -168,14 +174,16 @@ public class ReplyMessageView: UIView, UIGestureRecognizerDelegate {
                     self.authorAvatar.layer.shouldRasterize = true
                     self.authorAvatar.layer.rasterizationScale = UIScreen.main.scale
                     
-                    if let messageBackground = self.messageBackground as? LiquidGlassView {
-                        messageBackground.tintColorForGlass = color.withIncreasedSaturation(factor: 1.4).withAlphaComponent(0.4)
-                        messageBackground.shadowColor = color.withIncreasedSaturation(factor: 1.4).withAlphaComponent(1).cgColor
-                        messageBackground.shadowOpacity = 0.6
-                        messageBackground.setNeedsLayout()
-                    } else {
-                        self.messageBackground?.backgroundColor = color.withIncreasedSaturation(factor: 1.4)
-                        self.messageBackground?.setNeedsLayout()
+                    if ThemeEngine.enableProfileTinting {
+                        if let messageBackground = self.messageBackground as? LiquidGlassView {
+                            messageBackground.tintColorForGlass = color.withIncreasedSaturation(factor: 1.4).withAlphaComponent(0.4)
+                            messageBackground.shadowColor = color.withIncreasedSaturation(factor: 1.4).withAlphaComponent(1).cgColor
+                            messageBackground.shadowOpacity = 0.6
+                            messageBackground.setNeedsLayout()
+                        } else {
+                            self.messageBackground?.backgroundColor = color.withIncreasedSaturation(factor: 1.4)
+                            self.messageBackground?.setNeedsLayout()
+                        }
                     }
                 }
             }
