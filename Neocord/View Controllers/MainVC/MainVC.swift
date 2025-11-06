@@ -187,18 +187,16 @@ class ViewController: UIViewController {
         
         settingsButton.addAction(for: .touchUpInside) {
             self.settingsButton.isUserInteractionEnabled = false
-            self.mainMenuButton.isUserInteractionEnabled = true
             self.transition(from: self.containerView, to: self.settingsContainerView, direction: .left, in: self.mainContainerView, completionHandler: {
-                
+                self.mainMenuButton.isUserInteractionEnabled = true
             })
         }
         
         
         mainMenuButton.addAction(for: .touchUpInside) {
-            self.settingsButton.isUserInteractionEnabled = true
             self.mainMenuButton.isUserInteractionEnabled = false
             self.transition(from: self.settingsContainerView, to: self.containerView, direction: .right, in: self.mainContainerView, completionHandler: {
-                
+                self.settingsButton.isUserInteractionEnabled = true
             })
         }
         
@@ -329,7 +327,7 @@ class ViewController: UIViewController {
         case right
     }
     
-    func transition(from oldView: UIView?, to newView: UIView, direction: SlideDirection, in container: UIView, animated: Bool = true, completionHandler: () -> ()) {
+    func transition(from oldView: UIView?, to newView: UIView, direction: SlideDirection, in container: UIView, animated: Bool = true, completionHandler: @escaping () -> ()) {
         guard newView !== oldView else { return } // No need to animate if it's the same view
         
         // 1. Make sure both views exist and are visible
@@ -365,7 +363,9 @@ class ViewController: UIViewController {
                            options: [.curveEaseInOut],
                            animations: animations,
                            completion: completion)
-            newView.springAnimation()
+            if ThemeEngine.enableAnimations {
+                newView.springAnimation()
+            }
         } else {
             animations()
             completion(true)

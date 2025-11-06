@@ -14,10 +14,15 @@ import UIKitExtensions
 public final class ThemeEngine {
     public static var enableGlass: Bool {
         get {
-            if UserDefaults.standard.object(forKey: "enableGlass") == nil {
-                return true  // default value
+            switch device {
+            case .a4:
+                return false
+            default:
+                if UserDefaults.standard.object(forKey: "enableGlass") == nil {
+                    return true  // default value
+                }
+                return UserDefaults.standard.bool(forKey: "enableGlass")
             }
-            return UserDefaults.standard.bool(forKey: "enableGlass")
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "enableGlass")
