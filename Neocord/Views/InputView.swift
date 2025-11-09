@@ -219,13 +219,15 @@ public class InputView: UIView, UITextViewDelegate {
         
         let newMessage = Message(clientUser, ["content": self.textView.text])
         
+        self.textView.text = nil
+        self.editMessage = nil
+        self.changeInputMode(to: .send)
+        self.textViewDidChange(self.textView)
+        self.buttonIsActive = false
+        
         clientUser.reply(to: replyMessage, with: newMessage, in: channel) { [weak self] error in
             guard let self = self else { return }
-            self.textView.text = nil
-            self.editMessage = nil
-            self.changeInputMode(to: .send)
-            self.textViewDidChange(self.textView)
-            self.buttonIsActive = false
+            
             //self.removeCancelButton()
         }
     }
@@ -237,12 +239,13 @@ public class InputView: UIView, UITextViewDelegate {
         guard let channel = self.channel else { return }
         
         let message = Message(clientUser, ["content": self.textView.text])
+        self.textView.text = nil
+        self.textViewDidChange(self.textView)
+        self.buttonIsActive = true
         
         clientUser.send(message: message, in: channel) { [weak self] error in
             guard let self = self else { return }
-            self.textView.text = nil
-            self.textViewDidChange(self.textView)
-            self.buttonIsActive = true
+            
         }
     }
     
@@ -254,13 +257,15 @@ public class InputView: UIView, UITextViewDelegate {
         
         let newMessage = Message(clientUser, ["content": self.textView.text])
         
+        self.textView.text = nil
+        self.editMessage = nil
+        self.changeInputMode(to: .send)
+        self.textViewDidChange(self.textView)
+        self.buttonIsActive = true
+        
         clientUser.edit(message: editMessage, to: newMessage, in: channel) { [weak self] error in
             guard let self = self else { return }
-            self.textView.text = nil
-            self.editMessage = nil
-            self.changeInputMode(to: .send)
-            self.textViewDidChange(self.textView)
-            self.buttonIsActive = true
+            
             //self.removeCancelButton()
         }
     }

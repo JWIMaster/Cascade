@@ -49,7 +49,8 @@ extension MessageView {
         newImageView.translatesAutoresizingMaskIntoConstraints = false
         
         let vc = AttachmentViewController(attachment: newImageView)
-        self.parentViewController?.navigationController?.pushViewController(vc, animated: true)
+        vc.modalPresentationStyle = .pageSheet
+        self.parentViewController?.present(vc, animated: true)
     }
     
     @objc func messageAction(_ gesture: UILongPressGestureRecognizer) {

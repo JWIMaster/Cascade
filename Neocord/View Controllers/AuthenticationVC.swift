@@ -242,7 +242,7 @@ class AuthenticationViewController: UIViewController {
     private func proceedToMainApp() {
         statusLabel.text = "Login successful!"
         let startVC = ViewController()
-        let navController = CustomNavigationController(rootViewController: startVC)
+        let navController = LoadingViewController()
         UIApplication.shared.keyWindow?.rootViewController = navController
     }
 }

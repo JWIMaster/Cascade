@@ -74,7 +74,7 @@ final class AttachmentViewController: UIViewController, UIScrollViewDelegate {
         bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20).isActive = true
         bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20).isActive = true
         bottomBar.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        bottomBar.heightAnchor.constraint(equalToConstant: (self.navigationController?.navigationBar.frame.height)!).isActive = true
+        bottomBar.heightAnchor.constraint(equalToConstant: (self.parent?.navigationController?.navigationBar.frame.height) ?? 44).isActive = true
 
         shareButton.centerXAnchor.constraint(equalTo: bottomBar.centerXAnchor).isActive = true
         shareButton.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor).isActive = true

@@ -23,11 +23,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var rootVC: UIViewController
         var navController: UINavigationController
         AvatarCache.shared.memoryCache.countLimit = 20
-        
+        print(UIColor.black.argbInt)
         
         if token != nil {
             rootVC = ViewController()
             navController = CustomNavigationController(rootViewController: rootVC)
+            
             SetStatusBarBlackTranslucent()
             SetWantsFullScreenLayout(navController, true)
 
@@ -42,6 +43,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.makeKeyAndVisible()
             return true
         }
+    }
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        clientUser.saveCache()
     }
     
     

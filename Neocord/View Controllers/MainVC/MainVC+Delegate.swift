@@ -77,6 +77,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             case .guild(let guild):
                 showContentView(channelsCollectionView)
                 setupChannelCollectionView(for: guild)
+            
             }
             
         case channelsCollectionView:
@@ -191,14 +192,37 @@ extension ViewController {
     }
     
     func fetchGuilds() {
-        clientUser.getUserGuilds() { [weak self] guilds, error in
-            guard let self = self else { return }
-            for (_, guild) in guilds {
-                self.guilds.append(guild)
+            clientUser.getClientUserSettings() { settings, error in
+                let guildFolders = settings.guildFolders
+                var orderID: [Snowflake] = []
+                guard let guildFolders = guildFolders else {
+                    return
+                }
+
+                for folder in guildFolders {
+                    guard let guildIDs = folder.guildIDs else { return }
+                    for id in guildIDs {
+                        orderID.append(id)
+                    }
+                }
+                clientUser.getUserGuilds() { [weak self] guilds, error in
+                    guard let self = self else { return }
+                    for (_, guild) in guilds {
+                        self.guilds.append(guild)
+                    }
+                    
+                    let orderedGuilds = orderID.compactMap { guildId in
+                        return self.guilds.first { $0.id == guildId }
+                    }
+                    
+                    self.guilds = orderedGuilds
+                    self.orderedGuilds = orderedGuilds
+                    
+                    self.sidebarCollectionView.reloadData()
+                }
             }
-            self.sidebarCollectionView.reloadData()
+            
         }
-    }
     
     func fetchChannels(for guild: Guild, completion: @escaping () -> Void) {
         clientUser.getGuildChannels(for: guild.id!) { [weak self] channels, error in

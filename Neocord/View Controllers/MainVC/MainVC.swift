@@ -18,8 +18,34 @@ public typealias UIStackView = UIKitCompatKit.UIStackView
 
 class ViewController: UIViewController {
     
-    var dms: [DMChannel] = []
-    var guilds: [Guild] = []
+    var dms: [DMChannel] {
+        get {
+            return Array(clientUser.dms.values).sorted { $0.lastMessageID?.rawValue ?? 0 > $1.lastMessageID?.rawValue ?? 0 }
+        }
+        set {
+            for dm in newValue {
+                if let id = dm.id {
+                    clientUser.dms[id] = dm
+                }
+            }
+        }
+    }
+    
+    var orderedGuilds: [Guild] = []
+    
+    var guilds: [Guild] {
+        get {
+            return Array(clientUser.guilds.values)
+        }
+        set {
+            for guild in newValue {
+                if let id = guild.id {
+                    clientUser.guilds[id] = guild
+                }
+            }
+        }
+    }
+    
     var activeGuildChannels: [GuildChannel] = []
     
     var containerView = UIView()
@@ -29,7 +55,7 @@ class ViewController: UIViewController {
     }
     
     var sidebarButtons: [SidebarButtonType] {
-        return [.dms] + guilds.map { .guild($0) }
+        return [.dms] + orderedGuilds.map { .guild($0) }
     }
     
     let activeContentView: UIView = {
@@ -148,7 +174,11 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupMainView()
+        clientUser.connect()
+        self.setupMainView()
+        /*clientUser.loadCache {
+            
+        }*/
     }
     
     func setupMainView() {
@@ -157,7 +187,7 @@ class ViewController: UIViewController {
         
         guard let sidebarBackgroundView = sidebarBackgroundView else { return }
         
-        clientUser.connect()
+        
         if #unavailable(iOS 7.0.1) {
             SetStatusBarBlackTranslucent()
             SetWantsFullScreenLayout(self, true)
@@ -184,6 +214,7 @@ class ViewController: UIViewController {
         fetchDMs()
         fetchGuilds()
         
+
         
         settingsButton.addAction(for: .touchUpInside) {
             self.settingsButton.isUserInteractionEnabled = false
@@ -210,6 +241,16 @@ class ViewController: UIViewController {
             toolbar.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
             sidebarBackgroundView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
         }
+        
+        /*clientUser.onReady = {
+            DispatchQueue.main.async {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                self.sidebarCollectionView.reloadData()
+                self.dmCollectionView.reloadData()
+                CATransaction.commit()
+            }
+        }*/
     }
     
     func refreshView() {
@@ -328,49 +369,79 @@ class ViewController: UIViewController {
     }
     
     func transition(from oldView: UIView?, to newView: UIView, direction: SlideDirection, in container: UIView, animated: Bool = true, completionHandler: @escaping () -> ()) {
-        guard newView !== oldView else { return } // No need to animate if it's the same view
+        guard newView !== oldView else { return }
         
-        // 1. Make sure both views exist and are visible
         oldView?.isHidden = false
         newView.isHidden = false
-        // 3. Prepare transforms
-        let width = container.bounds.width
-        let offset = direction == .left ? width : -width
-        newView.transform = CGAffineTransform(translationX: offset, y: 0)
         
-        // 4. Animate
+        let width = container.bounds.width
+        let newOffset = direction == .left ? width : -width
+        let oldOffset = direction == .left ? -width : width
+
+        // Immediately set starting positions without jumping
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        newView.layer.transform = CATransform3DMakeTranslation(newOffset, 0, 0)
+        newView.layer.opacity = 0
+        oldView?.layer.transform = CATransform3DIdentity
+        oldView?.layer.opacity = 1
+        CATransaction.commit()
+        
         let animations = {
-            oldView?.transform = CGAffineTransform(translationX: -offset, y: 0)
-            newView.transform = .identity
+            // Animate transform
+            let transformAnimOld = CABasicAnimation(keyPath: "transform.translation.x")
+            transformAnimOld.fromValue = 0
+            transformAnimOld.toValue = oldOffset
+            transformAnimOld.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            transformAnimOld.duration = 0.35
+            oldView?.layer.add(transformAnimOld, forKey: "slideOut")
+            oldView?.layer.transform = CATransform3DMakeTranslation(oldOffset, 0, 0)
+            
+            let transformAnimNew = CABasicAnimation(keyPath: "transform.translation.x")
+            transformAnimNew.fromValue = newOffset
+            transformAnimNew.toValue = 0
+            transformAnimNew.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            transformAnimNew.duration = 0.35
+            newView.layer.add(transformAnimNew, forKey: "slideIn")
+            newView.layer.transform = CATransform3DIdentity
+            
+            // Animate opacity
+            let opacityAnimOld = CABasicAnimation(keyPath: "opacity")
+            opacityAnimOld.fromValue = 1
+            opacityAnimOld.toValue = 0
+            opacityAnimOld.duration = 0.35
+            oldView?.layer.add(opacityAnimOld, forKey: "fadeOut")
+            oldView?.layer.opacity = 0
+            
+            let opacityAnimNew = CABasicAnimation(keyPath: "opacity")
+            opacityAnimNew.fromValue = 0
+            opacityAnimNew.toValue = 1
+            opacityAnimNew.duration = 0.35
+            newView.layer.add(opacityAnimNew, forKey: "fadeIn")
+            newView.layer.opacity = 1
         }
         
-        let completion: (Bool) -> Void = { _ in
-            // Reset transforms so layout stays normal
-            oldView?.transform = .identity
-            newView.transform = .identity
-            
-            // ✅ Hide the old view only *after* transition
+        let completion: () -> Void = {
             oldView?.isHidden = true
-            
-            // ✅ Bring the new view to the front
             container.bringSubviewToFront(newView)
             completionHandler()
         }
         
         if animated {
-            UIView.animate(withDuration: 0.35,
-                           delay: 0,
-                           options: [.curveEaseInOut],
-                           animations: animations,
-                           completion: completion)
-            if ThemeEngine.enableAnimations {
-                newView.springAnimation()
-            }
-        } else {
+            CATransaction.begin()
+            CATransaction.setAnimationDuration(0.35)
+            CATransaction.setCompletionBlock(completion)
             animations()
-            completion(true)
+            CATransaction.commit()
+        } else {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            animations()
+            CATransaction.commit()
+            completion()
         }
     }
+
 
 
 

@@ -35,11 +35,9 @@ extension TextViewController {
     
     //Websocket create message function
     func createMessage(_ message: Message) {
-        guard let messageID = message.id,
-              let userID = message.author?.id,
-              !messageIDsInStack.contains(messageID) else { return }
+        guard let messageID = message.id, let userID = message.author?.id, !messageIDsInStack.contains(messageID) else { return }
         
-        // Determine if this message belongs to the current view
+
         let isDMMessage = (self.dm?.id == message.channelID)
         let isGuildMessage = (self.channel?.id == message.channelID)
         
@@ -77,10 +75,17 @@ extension TextViewController {
             if let messageView = view as? MessageView, messageView.message?.id == message.id {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    UIView.animate(withDuration: 0.3, delay: 0, options: [.allowUserInteraction, .curveEaseInOut], animations: {
-                        self.messageStack.removeArrangedSubview(messageView)
+                    UIView.animate(withDuration: 0.2, delay: 0, options: [.allowUserInteraction, .curveEaseInOut], animations: {
+                        messageView.alpha = 0
+                        messageView.transform = CGAffineTransform(scaleX: 0.3, y: 0.3)
+                        
                         self.view.layoutIfNeeded()
-                    }, completion: nil)
+                    }, completion: { _ in
+                        UIView.animate(withDuration: 0.3, delay: 0, options: [.allowUserInteraction, .curveEaseInOut], animations: {
+                            self.messageStack.removeArrangedSubview(messageView)
+                            self.view.layoutIfNeeded()
+                        }, completion: nil)
+                    })
                 }
             }
         }
