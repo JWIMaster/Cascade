@@ -77,7 +77,40 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             case .guild(let guild):
                 showContentView(channelsCollectionView)
                 setupChannelCollectionView(for: guild)
-            
+            case .folder(let folder, _):
+                guard let folderID = folder.id?.description else { return }
+                print(folderID)
+                let isExpanded = UserDefaults.standard.bool(forKey: folderID)
+                let guildsInFolder = orderedGuilds.filter { folder.guildIDs?.contains($0.id!) ?? false }
+                guard !guildsInFolder.isEmpty else { return }
+
+                guard let folderIndex = sidebarButtons.firstIndex(where: {
+                    if case .folder(let f, _) = $0 { return f.id == folder.id }
+                    return false
+                }) else { return }
+                
+                let startIndex = folderIndex + 1
+
+                sidebarCollectionView.performBatchUpdates({
+                    if isExpanded {
+                        // Collapse
+                        let endIndex = min(startIndex + guildsInFolder.count, sidebarButtons.count)
+                        let indexPaths = (startIndex..<endIndex).map { IndexPath(item: $0, section: 0) }
+                        sidebarButtons.removeSubrange(startIndex..<endIndex)
+                        sidebarCollectionView.deleteItems(at: indexPaths)
+                    } else {
+                        // Expand
+                        sidebarButtons.insert(contentsOf: guildsInFolder.map { .guild($0) }, at: startIndex)
+                        let indexPaths = (startIndex..<startIndex + guildsInFolder.count).map { IndexPath(item: $0, section: 0) }
+                        sidebarCollectionView.insertItems(at: indexPaths)
+                    }
+
+                    // Update folder itself with new expanded state
+                    sidebarButtons[folderIndex] = .folder(folder, isExpanded: !isExpanded)
+                }, completion: nil)
+                
+                UserDefaults.standard.set(!isExpanded, forKey: folderID)
+                self.rebuildSidebarButtons()
             }
             
         case channelsCollectionView:
@@ -97,6 +130,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         default: break
         }
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width - 20
@@ -128,7 +162,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
     // MARK: Channels Setup
     func setupChannelCollectionView(for guild: Guild) {
         guard activeGuild?.id != guild.id || displayedChannels.isEmpty || !guild.fullGuild else { return }
-        
+        print(guild)
         activeGuild = guild
         updateTitle(guild.name ?? "Loading…")
         if activeContentView.subviews.first != channelsCollectionView || activeContentView.subviews.first == dmCollectionView{
@@ -160,9 +194,9 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
             DispatchQueue.main.async {
                 loadingLabel.removeFromSuperview()
                 self.flattenChannelsForDisplay()
+                self.channelsCollectionView.reloadData()
                 UIView.transition(with: self.channelsCollectionView, duration: 0.25, options: .transitionCrossDissolve) {
                     self.channelsCollectionView.alpha = 1
-                    self.channelsCollectionView.reloadData()
                 }
                 self.updateTitle(guild.name ?? "Unknown Guild")
             }
@@ -171,6 +205,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDa
         clientUser.getFullGuild(guild) { [weak self] guilds, _ in
             guard let self = self, let fullGuild = guilds.values.first else { return }
             self.activeGuild = fullGuild
+            
             if let index = self.guilds.firstIndex(where: { $0.id == fullGuild.id }) { self.guilds[index] = fullGuild }
         }
     }
@@ -188,41 +223,45 @@ extension ViewController {
             guard let self = self else { return }
             self.dms = dms
             self.dmCollectionView.reloadData()
+            clientUser.saveCache()
         }
     }
     
     func fetchGuilds() {
-            clientUser.getClientUserSettings() { settings, error in
-                let guildFolders = settings.guildFolders
-                var orderID: [Snowflake] = []
-                guard let guildFolders = guildFolders else {
-                    return
-                }
-
-                for folder in guildFolders {
-                    guard let guildIDs = folder.guildIDs else { return }
-                    for id in guildIDs {
-                        orderID.append(id)
-                    }
-                }
-                clientUser.getUserGuilds() { [weak self] guilds, error in
-                    guard let self = self else { return }
-                    for (_, guild) in guilds {
-                        self.guilds.append(guild)
-                    }
-                    
-                    let orderedGuilds = orderID.compactMap { guildId in
-                        return self.guilds.first { $0.id == guildId }
-                    }
-                    
-                    self.guilds = orderedGuilds
-                    self.orderedGuilds = orderedGuilds
-                    
-                    self.sidebarCollectionView.reloadData()
-                }
+        clientUser.getClientUserSettings() { settings, error in
+            let guildFolders = settings.guildFolders
+            var orderID: [Snowflake] = []
+            guard let guildFolders = guildFolders else {
+                return
             }
             
+            for folder in guildFolders {
+                guard let guildIDs = folder.guildIDs else { return }
+                for id in guildIDs {
+                    orderID.append(id)
+                }
+            }
+            clientUser.getUserGuilds() { [weak self] guilds, error in
+                guard let self = self else { return }
+                for (_, guild) in guilds {
+                    self.guilds.append(guild)
+                }
+                
+                let orderedGuilds = orderID.compactMap { guildId in
+                    return self.guilds.first { $0.id == guildId }
+                }
+                
+                self.guilds = orderedGuilds
+                self.orderedGuilds = orderedGuilds
+                
+                self.rebuildSidebarButtons()
+                self.sidebarCollectionView.reloadData()
+
+            }
+            
+            clientUser.saveCache()
         }
+    }
     
     func fetchChannels(for guild: Guild, completion: @escaping () -> Void) {
         clientUser.getGuildChannels(for: guild.id!) { [weak self] channels, error in
@@ -231,6 +270,36 @@ extension ViewController {
             self.flattenChannelsForDisplay()
             completion()
         }
+    }
+    
+    func setupOrderedGuilds() {
+        guard let settings = clientUser.clientUserSettings else { return }
+        let guildFolders = settings.guildFolders
+        var orderID: [Snowflake] = []
+        guard let guildFolders = guildFolders else {
+            return
+        }
+        
+        for folder in guildFolders {
+            guard let guildIDs = folder.guildIDs else { return }
+            for id in guildIDs {
+                orderID.append(id)
+            }
+        }
+        let guilds = clientUser.guilds
+        for (_, guild) in guilds {
+            self.guilds.append(guild)
+        }
+        
+        
+        let orderedGuilds = orderID.compactMap { guildId in
+            return self.guilds.first { $0.id == guildId }
+        }
+        
+        self.guilds = orderedGuilds
+        self.orderedGuilds = orderedGuilds
+        
+        self.sidebarCollectionView.reloadData()
     }
 }
 

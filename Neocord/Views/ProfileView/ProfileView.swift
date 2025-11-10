@@ -66,6 +66,10 @@ class ProfileView: UIView {
         }
     }()
     
+    /*func makeRole(name: String, color: UIColor) -> UIView {
+        
+    }*/
+    
     // MARK: - Init
     
     init(user: User, member: GuildMember? = nil) {

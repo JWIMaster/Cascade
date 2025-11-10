@@ -79,6 +79,8 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     static let calendar = Calendar.current
     
+    let markdownView = DiscordMarkdownView()
+    
     public init(_ slClient: SLClient, message: Message, guildTextChannel: GuildChannel? = nil) {
         super.init(frame: .zero)
         self.slClient = slClient
@@ -121,7 +123,11 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
             addSubview(replyView)
         }
         
-        messageContent.addArrangedSubview(messageText)
+        if #available(iOS 7.0.1, *) {
+            messageContent.addArrangedSubview(markdownView)
+        } else {
+            messageContent.addArrangedSubview(messageText)
+        }
         addSubview(messageContent)
         addSubview(messageBackground)
         sendSubviewToBack(messageBackground)
@@ -249,6 +255,14 @@ public class MessageView: UIView, UIGestureRecognizerDelegate {
     
     public override func layoutSubviews() {
         super.layoutSubviews()
+        if let parentVC = self.parentViewController as? TextViewController, let dm = parentVC.dm {
+            if let dm = dm as? DM, message?.author?.id == dm.recipient?.id {
+                authorName.text = dm.recipient?.nickname ?? message?.author?.displayname ?? message?.author?.username
+            } else if let groupDM = dm as? GroupDM {
+                let messageAuthor = groupDM.recipients?.first(where: { $0.id == message?.author?.id })
+                authorName.text = messageAuthor?.nickname ?? message?.author?.displayname ?? message?.author?.username
+            }
+        }
     }
     
     

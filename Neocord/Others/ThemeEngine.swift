@@ -31,10 +31,15 @@ public final class ThemeEngine {
     }
     public static var enableAnimations: Bool {
         get {
-            if UserDefaults.standard.object(forKey: "enableAnimations") == nil {
-                return true  // default value
+            switch device {
+            case .a4, .a5, .a6:
+                return false
+            default:
+                if UserDefaults.standard.object(forKey: "enableAnimations") == nil {
+                    return true  // default value
+                }
+                return UserDefaults.standard.bool(forKey: "enableAnimations")
             }
-            return UserDefaults.standard.bool(forKey: "enableAnimations")
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "enableAnimations")

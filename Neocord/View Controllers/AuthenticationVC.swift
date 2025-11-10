@@ -160,13 +160,14 @@ class AuthenticationViewController: UIViewController {
     @objc func didTapLogin() {
         if tokenToggle.isOn {
             // Directly set token
-            let token = tokenField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if token.isEmpty {
+            let token1 = tokenField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if token1.isEmpty {
                 statusLabel.text = "Enter a token."
                 return
             }
-            loginManager.token = token
+            loginManager.token = token1
             proceedToMainApp()
+            token = token1
             return
         }
 

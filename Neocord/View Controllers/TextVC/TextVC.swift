@@ -67,6 +67,17 @@ class TextViewController: UIViewController, UIGestureRecognizerDelegate, UIScrol
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        safelyRemoveScrollView()
+    }
+    
+    func safelyRemoveScrollView() {
+        scrollView.delegate = nil
+        scrollView.layer.removeAllAnimations()
+        scrollView.setContentOffset(scrollView.contentOffset, animated: false)
+        scrollView.removeFromSuperview()
+    }
+
     
     override func viewDidLoad() {
         view.backgroundColor = .discordGray

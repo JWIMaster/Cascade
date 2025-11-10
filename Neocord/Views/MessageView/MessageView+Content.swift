@@ -14,6 +14,8 @@ import TSMarkdownParser
 import FoundationCompatKit
 
 extension MessageView {
+    
+    
     func setupText() {
         messageText.translatesAutoresizingMaskIntoConstraints = false
         
@@ -23,6 +25,11 @@ extension MessageView {
         messageText.lineBreakMode = .byWordWrapping
         messageText.preferredMaxLayoutWidth = UIScreen.main.bounds.width - 80
         messageText.numberOfLines = 0
+        
+        if #available(iOS 7.0.1, *) {
+            markdownView.text = "\(message?.content ?? "unknown")"
+            markdownView.setMarkdown("\(message?.content ?? "unknown")")
+        }
         //messageText.sizeToFit()
         
         MessageView.markdownQueue.async { [weak self] in

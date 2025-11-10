@@ -12,6 +12,7 @@ import UIKitCompatKit
 import iOS6BarFix
 import LiveFrost
 import SFSymbolsCompatKit
+import FoundationCompatKit
 
 public typealias UIStackView = UIKitCompatKit.UIStackView
 
@@ -54,9 +55,59 @@ class ViewController: UIViewController {
         return UIApplication.shared.statusBarFrame.height+(self.navigationController?.navigationBar.frame.height)!
     }
     
-    var sidebarButtons: [SidebarButtonType] {
+    /*var sidebarButtons: [SidebarButtonType] {
         return [.dms] + orderedGuilds.map { .guild($0) }
+    }*/
+    
+    var expandedFolderIDs: Set<String> {
+        get {
+            if let array = UserDefaults.standard.array(forKey: "expandedFolderIDs") as? [String] {
+                return Set(array)
+            }
+            return []
+        }
+        set {
+            let array = Array(newValue)
+            UserDefaults.standard.set(array, forKey: "expandedFolderIDs")
+            UserDefaults.standard.synchronize()
+        }
     }
+    
+    /*var sidebarButtons: [SidebarButtonType] {
+        var items: [SidebarButtonType] = [.dms]
+
+        guard let folders = clientUser.clientUserSettings?.guildFolders else {
+            items.append(contentsOf: orderedGuilds.map { .guild($0) })
+            return items
+        }
+
+        for folder in folders {
+            guard let guildIDs = folder.guildIDs else { continue }
+            let guildsInFolder = orderedGuilds.filter { guildIDs.contains($0.id!) }
+
+            // Skip folder if it only has 1 guild
+            if guildsInFolder.count == 1 {
+                items.append(.guild(guildsInFolder[0]))
+                continue
+            }
+
+            // Determine if folder is expanded; default to false
+            let folderID = folder.id?.description
+            let isExpanded = UserDefaults.standard.bool(forKey: "\(folderID)") ?? false
+            items.append(.folder(folder, isExpanded: isExpanded))
+
+            // Append child guilds only if folder is expanded
+            if isExpanded {
+                items.append(contentsOf: guildsInFolder.map { .guild($0) })
+            }
+        }
+
+        return items
+    }*/
+    
+    var sidebarButtons: [SidebarButtonType] = []
+
+
     
     let activeContentView: UIView = {
         if ThemeEngine.enableGlass {
@@ -81,7 +132,7 @@ class ViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 8
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 20, bottom: 20, right: 20)
+        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 20, right: 10)
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
@@ -97,7 +148,7 @@ class ViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 8
-        layout.sectionInset = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
@@ -113,7 +164,7 @@ class ViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 8
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 20, bottom: 20, right: 20)
+        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 20, right: 10)
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
@@ -175,10 +226,11 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         clientUser.connect()
+        //clientUser.clearCache()
+        
+        
         self.setupMainView()
-        /*clientUser.loadCache {
-            
-        }*/
+        
     }
     
     func setupMainView() {
@@ -187,7 +239,19 @@ class ViewController: UIViewController {
         
         guard let sidebarBackgroundView = sidebarBackgroundView else { return }
         
-        
+        clientUser.loadCache {
+            
+            self.setupOrderedGuilds()
+            
+            self.rebuildSidebarButtons()
+            
+            self.sidebarCollectionView.reloadData()
+            self.dmCollectionView.reloadData()
+            self.channelsCollectionView.reloadData()
+            self.fetchDMs()
+            self.fetchGuilds()
+            
+        }
         if #unavailable(iOS 7.0.1) {
             SetStatusBarBlackTranslucent()
             SetWantsFullScreenLayout(self, true)
@@ -211,11 +275,30 @@ class ViewController: UIViewController {
         toolbar.translatesAutoresizingMaskIntoConstraints = false
         
         setupConstraints()
-        fetchDMs()
-        fetchGuilds()
+        setupButtonActions()
         
 
         
+        toolbar.setItems([UIButton(), mainMenuButton, settingsButton, UIButton()])
+        
+        if ThemeEngine.enableAnimations {
+            activeContentView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+            toolbar.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+            sidebarBackgroundView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
+        }
+        
+        clientUser.onReady = {
+            DispatchQueue.main.async {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                self.sidebarCollectionView.reloadData()
+                self.dmCollectionView.reloadData()
+                CATransaction.commit()
+            }
+        }
+    }
+    
+    func setupButtonActions() {
         settingsButton.addAction(for: .touchUpInside) {
             self.settingsButton.isUserInteractionEnabled = false
             self.transition(from: self.containerView, to: self.settingsContainerView, direction: .left, in: self.mainContainerView, completionHandler: {
@@ -230,28 +313,48 @@ class ViewController: UIViewController {
                 self.settingsButton.isUserInteractionEnabled = true
             })
         }
-        
-        toolbar.setItems([UIButton(), mainMenuButton, settingsButton, UIButton()])
-        
-        switch device {
-        case .a4, .a5, .a6:
-            break
-        default:
-            activeContentView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
-            toolbar.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
-            sidebarBackgroundView.springAnimation(scaleDuration: 0.5, bounceDuration: 0.4)
-        }
-        
-        /*clientUser.onReady = {
-            DispatchQueue.main.async {
-                CATransaction.begin()
-                CATransaction.setDisableActions(true)
-                self.sidebarCollectionView.reloadData()
-                self.dmCollectionView.reloadData()
-                CATransaction.commit()
-            }
-        }*/
     }
+    
+    func rebuildSidebarButtons() {
+        var items: [SidebarButtonType] = [.dms]
+
+        guard let folders = clientUser.clientUserSettings?.guildFolders else {
+            items.append(contentsOf: orderedGuilds.map { .guild($0) })
+            sidebarButtons = items
+            return
+        }
+
+        for folder in folders {
+            guard let guildIDs = folder.guildIDs else { continue }
+            let guildsInFolder = orderedGuilds.filter { guildIDs.contains($0.id!) }
+
+            // Skip showing folder if it has only one guild
+            if guildsInFolder.count == 1 {
+                items.append(.guild(guildsInFolder[0]))
+                continue
+            }
+            
+            if folder.id == nil || folder.id?.description == "" {
+                let uuidString = UUID().uuidString
+                let digitsString = uuidString.compactMap { $0.wholeNumberValue }.map(String.init).joined()
+                folder.id = Int(digitsString.prefix(9))
+            }
+            
+            let folderKey = folder.id?.description ?? ""
+            let isExpanded = UserDefaults.standard.bool(forKey: folderKey)
+            // Add the folder with its persisted expanded state
+            items.append(.folder(folder, isExpanded: isExpanded))
+
+            // If it’s expanded, add its guilds
+            if isExpanded {
+                items.append(contentsOf: guildsInFolder.map { .guild($0) })
+            }
+        }
+
+        sidebarButtons = items
+    }
+
+
     
     func refreshView() {
         self.view.setNeedsLayout()
@@ -441,10 +544,6 @@ class ViewController: UIViewController {
             completion()
         }
     }
-
-
-
-
 }
 
 
